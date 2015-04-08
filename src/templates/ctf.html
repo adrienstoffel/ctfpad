@@ -29,18 +29,21 @@
       */
     </script>
 
-        <meta charset="utf-8"> 
+        <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
         <link rel="shortcut icon" href="<%=settings.favicon%>">
 
+        <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+        <link rel="stylesheet" href="/static/font-awesome/css/font-awesome.min.css">
         <link rel="localizations" type="application/l10n+json" href="/locales.json">
-	<script type="text/javascript" src="../static/js/require-kernel.js"></script>
+        <script type="text/javascript" src="../static/js/require-kernel.js"></script>
         <script type="text/javascript" src="/static/js/apikey.js"></script>
         <script type="text/javascript" src="/static/js/html10n.js"></script>
         <script type="text/javascript" src="/static/js/l10n.js"></script>
         <script type="text/javascript" src="/static/js/jquery.js"></script>
         <script type="text/javascript" src="/static/js/lodash.min.js"></script>
         <script type="text/javascript" src="/static/js/ZeroClipboard.min.js"></script>
+        <script type="text/javascript" src="/static/bootstrap/js/bootstrap.min.js"></script>
         <style>
             html, body {
               height: 100%;
@@ -49,79 +52,157 @@
               margin: 0;
               color: #333;
               font: 14px helvetica, sans-serif;
-              background: #ddd;
+              background: white;
               background: -webkit-radial-gradient(circle,#aaa,#eee 60%) center fixed;
               background: -moz-radial-gradient(circle,#aaa,#eee 60%) center fixed;
               background: -ms-radial-gradient(circle,#aaa,#eee 60%) center fixed;
               background: -o-radial-gradient(circle,#aaa,#eee 60%) center fixed;
-              border-top: 8px solid rgba(51,51,51,.8);
+              /* border-top: 8px solid rgba(51,51,51,.8); */
+            }
+            .navbar-static-top {
+                margin-bottom: 19px;
+            }
+            .container {
+                width: 100%;
             }
             #left{
               float:left;
-              width:30%;
+              width:20%;
+              position: relative;
+
             }
             #right{
               float:right;
-              width:70%;
+              width:80%;
+              position: relative;
             }
             #right iframe{
-              height:96vh;
-              width:96%;
+              height: 90vh;
+              width: 100%;
             }
             .done{
               text-decoration: line-through;
             }
-            
+            .box {
+                padding: 0px 15px 0px 15px;
+                margin: 15px;
+                background: #f5f5f5;
+                border: 1px solid rgb(158, 158, 158);
+                border-radius: 10px;
+            }
+
         </style>
-        <link href="/static/custom/index.css" rel="stylesheet"> 
-        <div id="left" style="1px solid black; ">
-        <h1><%= pad %></h1>
-        <a id="link" href="#" target="_blank"><%= pad %> link</a><br />
-        <input id="username" type="text" value="" readonly=""><button id="copyu" data-clipboard-text="">Copy</button><br />
-        <input id="password" type="password" value="" readonly=""><button id="copyp" data-clipboard-text="">Copy</button><br />
-        <h2>Add task</h2>
-        <label>Task name : <input type="text" id="taskName"></label><br />
-        <label>Category : 
-          <select id="categories">
-          </select>
-        </label>
-        <input style="display:none" type="text" id="taskCategory"><br />
-        <button id="newTask">Add task</button>
-        <h2>Pads</h2>
-        <div id="pads">
+        <link href="/static/custom/index.css" rel="stylesheet">
+        <nav id="ctfmenu" class="navbar navbar-static-top navbar-inverse">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">0daysober CTF Manager</a>
+                </div>
+                <div id="navbar" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="#">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+        <div id="left" style="1px solid black;">
+          <div class="box">
+            <h2><%= pad %></h2>
+            <p>
+                <strong>Link:</strong>
+                <a id="link" href="#" target="_blank"><%= pad %> link</a><br />
+            </p>
+
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <div class="input-group">
+                    <input id="username" type="text" value="" readonly="" class="form-control">
+                    <div class="input-group-btn">
+                        <button id="copyu" data-clipboard-text="" class="btn btn-primary">
+                            <i class="fa fa-edit"></i> Copy
+                        </button>
+                    </div>
+                </div>
+                <label for="password">Password:</label>
+                <div class="input-group">
+                    <input id="password" type="password" value="" readonly="" class="form-control">
+                    <div class="input-group-btn">
+                        <button id="copyp" data-clipboard-text="" class="btn btn-primary">
+                            <i class="fa fa-edit"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+          </div>
+
+          <div class="box">
+              <!--<h3>Pads</h3>-->
+            <div id="pads"></div>
+          </div>
+
+          <div class="box">
+            <h3>Add task</h3>
+
+            <div class="form-group">
+                <label for="taskName">Task name:</label>
+                <input id="taskName" type="text" class="form-control" placeholder="enter the task name">
+                <label for="categories">Category:</label>
+                <select id="categories" class="form-control"></select>
+                <input style="display:none" type="text" id="taskCategory" class="form-control"><br />
+                <button id="newTask" class="btn btn-primary">
+                    <i class="fa fa-plus"></i> Add task
+                </button>
+            </div>
+          </div>
         </div>
-        </div>
+
         <div id="right">
           <iframe id="thePad" src=""></iframe>
         </div>
+        </div>
+
         <script>
         var pathComponents = location.pathname.split('/');
 
-              // Strip 'p' and the padname from the pathname and set as baseURL
-              var baseURL = pathComponents.slice(0,pathComponents.length-2).join('/') + '/';
+        // Strip 'p' and the padname from the pathname and set as baseURL
+        var baseURL = pathComponents.slice(0,pathComponents.length-2).join('/') + '/';
         require.setRootURI(baseURL + "javascripts/src");
-              require.setLibraryURI(baseURL + "javascripts/lib");
-              require.setGlobalKeyPath("require");
+        require.setLibraryURI(baseURL + "javascripts/lib");
+        require.setGlobalKeyPath("require");
         browser = require('ep_etherpad-lite/static/js/browser').browser;
+
         if ((!browser.msie) && (!(browser.mozilla && browser.version.indexOf("1.8.") == 0))) {
-                document.domain = document.domain; // for comet
-              }
+            document.domain = document.domain; // for comet
+        }
 
         String.prototype.checksum = function() {
-    var hash = 0, i, chr, len;
-    if (this.length === 0){
-        return hash;
-    }
-    for (i = 0, len = this.length; i < len; i++) {
-        chr   = this.charCodeAt(i);
-        hash  = ((hash << 5) - hash) + chr;
-        hash |= 0;
-    }
-    return hash.toString();
-};
+            var hash = 0, i, chr, len;
+            if (this.length === 0){
+                return hash;
+            }
+            for (i = 0, len = this.length; i < len; i++) {
+                chr   = this.charCodeAt(i);
+                hash  = ((hash << 5) - hash) + chr;
+                hash |= 0;
+            }
+            return hash.toString();
+        };
+
         new ZeroClipboard( document.getElementById("copyp") );
         new ZeroClipboard( document.getElementById("copyu") );
+
         CTF = {};
+
         $('#newTask').click(function(e){
           if($('#categories').val() === 'new'){
             var category = $('#taskCategory').val();
@@ -130,71 +211,73 @@
             var category = $('#categories').val();
           }
           var taskName = $('#taskName').val();
+
           if(category !== '' && taskName !== ''){
             var params = $.param({
               padID: taskName,
               text: taskName+' - '+category
             });
+
             $.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
-              if(data.code===0){
-                $('#taskCategory').val('');
-                $('#taskName').val('');
-                $('#categories').val('');
-                $('#thePad').attr('src', '/p/'+taskName);
-                if(typeof CTF.pads[category] === 'undefined'){
-                  CTF.pads[category] = [];
+                if(data.code===0){
+                    $('#taskCategory').val('');
+                    $('#taskName').val('');
+                    $('#categories').val('');
+                    $('#thePad').attr('src', '/p/'+taskName);
+                    if(typeof CTF.pads[category] === 'undefined'){
+                        CTF.pads[category] = [];
+                    }
+                    CTF.pads[category].push({name: taskName, done: false});
+
+                    var newParams = $.param({
+                        padID: '<%= pad %>',
+                        text: btoa(JSON.stringify(CTF))
+                    });
+
+                    $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function( data ) {
+                        if(data.code===0){
+                            listPads();
+                        }
+                        else{
+                            alert(data.message);
+                        }
+                    });
+
                 }
-                CTF.pads[category].push({name: taskName, done: false});
-
-                var newParams = $.param({
-                  padID: '<%= pad %>',
-                  text: btoa(JSON.stringify(CTF))
-                });
-
-                $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function( data ) {
-                  if(data.code===0){
-                    listPads();
-                  }
-                  else{
+                else{
                     alert(data.message);
-                  }
-                });
-                
-              }
-              else{
-                alert(data.message);
-              }
+                }
             });
           }
           else{
-            alert('Please select a category or a name');
+              alert('Please select a category or a name');
           }
         });
 
         $('#categories').change(function(e){
-          if(e.target.value === 'new'){
-            $('#taskCategory').css('display', 'inline');
-            $('#taskCategory').focus();
-          }
-          else{
-            $('#taskCategory').css('display', 'none');
-          }
+            if(e.target.value === 'new'){
+                $('#taskCategory').css('display', 'inline');
+                $('#taskCategory').focus();
+            }
+            else{
+                $('#taskCategory').css('display', 'none');
+            }
         });
         listPads();
         if(document.location.hash.length > 1){
-          loadPad();
+            loadPad();
         }
 
         $('#pads').on('click', '.chkbx', function(e){
-          var hash = $(e.target).parent().children('a').attr('href').substring(1);
-          done(hash, $(e.target).is(':checked'));
+            var hash = $(e.target).parent().children('a').attr('href').substring(1);
+            done(hash, $(e.target).is(':checked'));
         });
 
         function loadPad(){
-          $('#thePad').attr('src', '/p/'+window.location.hash.substring(1));
+            $('#thePad').attr('src', '/p/'+window.location.hash.substring(1));
         }
-	
-	function printUsers(span){
+
+        function printUsers(span){
             var padUsers = JSON.parse($(span).attr('data-padusers'));
             var users = [];
             padUsers.forEach(function(user){
@@ -204,84 +287,98 @@
         }
 
         function listPads(){
-          var params = $.param({
-            padID: '<%= pad %>'
-          });
-          
-          $.get("/api/1.2.9/getText?apikey="+APIKEY+"&"+params, function( data ) {
+            var params = $.param({
+                padID: '<%= pad %>'
+            });
+
+        $.get("/api/1.2.9/getText?apikey="+APIKEY+"&"+params, function( data ) {
             if(data.code===0){
-              CTF = JSON.parse(atob(data.data.text));
-              $('#link').attr('href', CTF.url);
-              $('#copyu').attr('data-clipboard-text', CTF.username);
-              $('#copyp').attr('data-clipboard-text', CTF.password);
-              $('#username').val(CTF.username);
-              $('#password').val(CTF.password);
+                CTF = JSON.parse(atob(data.data.text));
+
+                $('#link').attr('href', CTF.url);
+                $('#copyu').attr('data-clipboard-text', CTF.username);
+                $('#copyp').attr('data-clipboard-text', CTF.password);
+                $('#username').val(CTF.username);
+                $('#password').val(CTF.password);
                 $('#categories').html('');
                 $('#pads').html('');
-                $('#categories').append($('<option/>', { value: '', text : '----Select----' }));
+                $('#categories').append($('<option/>', { value: '', text : '---- Select a category ----' }));
                 $('#categories').append($('<option/>', { value: 'new', text : 'New category' }));
+
                 var pads = CTF.pads;
+
                 for (var category in pads){
-                  $('#categories').append($('<option/>', { value: category, text : category }));
-                  $('#pads').append($('<h3/>', {text: category}));
-                  var ul = $('<ul/>');
-                  pads[category].forEach(function(pad){
-                    var line = $('<li/>');
-                    getPadUsers(pad.name);
-                    if(pad.done){
-                      line.append($('<input/>', {class: 'chkbx', type: 'checkbox', checked: 'checked'}));
-                      line.append($('<a/>', {class: 'done', id: 'a_'+pad.name.checksum(), text: pad.name, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
-                    }
-                    else{
-                      line.append($('<input/>', {class: 'chkbx', type: 'checkbox'}));
-                      line.append($('<a/>', {id: 'a_'+pad.name.checksum(), text: pad.name, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
-                    }
-                    line.append($('<span/>', {id: 'span_'+pad.name.checksum(), text: 0, onmouseover: 'printUsers(this);'}));
-                    ul.append(line);
-                  });
-                  $('#pads').append(ul);
+                    $('#categories').append($('<option/>', { value: category, text : category }));
+                    $('#pads').append($('<h3/>', {text: category}));
+                    var ul = $('<ul/>', {class: 'list-unstyled'});
+
+                    pads[category].forEach(function(pad){
+                        var line = $('<li/>');
+                        getPadUsers(pad.name);
+
+                        if(pad.done){
+                            line.append($('<input/>', {class: 'chkbx', type: 'checkbox', checked: 'checked'}));
+                            line.append('&nbsp;&nbsp;');
+                            line.append($('<a/>', {class: 'done', id: 'a_'+pad.name.checksum(), text: pad.name, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
+                        }
+                        else{
+                            line.append($('<input/>', {class: 'chkbx', type: 'checkbox'}));
+                            line.append('&nbsp;&nbsp;');
+                            line.append($('<a/>', {id: 'a_'+pad.name.checksum(), text: pad.name, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
+                        }
+                        line.append($('<span/>', {id: 'span_'+pad.name.checksum(), text: 0, onmouseover: 'printUsers(this);', class: 'pull-right'}));
+                        ul.append(line);
+                    });
+                    $('#pads').append(ul);
                 }
-              }
-              else{
+            }
+            else{
                 alert(data.message);
-              }
-            });
-        }
+            }
+        });
+    }
 
-        function done(padUri, d){
-          for (var category in CTF.pads){
-            CTF.pads[category].forEach(function(pad){
-              if(pad.name===padUri){
+function done(padUri, d){
+    for (var category in CTF.pads){
+        CTF.pads[category].forEach(function(pad){
+            if(pad.name===padUri){
                 pad.done = d;
-              }
-            });
-          }
-          var newParams = $.param({
-            padID: '<%= pad %>',
-            text: btoa(JSON.stringify(CTF))
-          });
-          $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function( data ) {
-            if(data.code===0){
-              listPads();
             }
-            else{
-              alert(data.message);
-            }
-          });
+        });
+    }
+    var newParams = $.param({
+        padID: '<%= pad %>',
+        text: btoa(JSON.stringify(CTF))
+    });
+    $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function( data ) {
+        if(data.code===0){
+            listPads();
         }
-
-        function getPadUsers(padUri){
-          $.get("/api/1.2.9/padUsers?apikey="+APIKEY+"&padID="+padUri, function( data ) {
-            if(data.code===0){
-              $('#span_'+padUri.checksum()).text(data.data.padUsers.length);
-              $('#span_'+padUri.checksum()).attr('data-padUsers', JSON.stringify(data.data.padUsers));
-            }
-            else{
-              alert('getPadUsers '+padUri+' : '+data.message);
-            }
-          });
+        else{
+            alert(data.message);
         }
+    });
+}
 
-        setInterval("listPads()", 1000*60);
+function getPadUsers(padUri){
+    $.get("/api/1.2.9/padUsers?apikey="+APIKEY+"&padID="+padUri, function( data ) {
+        if(data.code===0){
+            if (data.data.padUsers.length == 0) {
+                icon = "fa fa-user-times";
+            } else if (data.data.padUsers.length == 1) {
+                icon = "fa fa-user";
+            } else {
+                icon = "fa fa-users";
+            }
+            $('#span_'+padUri.checksum()).html(data.data.padUsers.length + ' <i class="fa ' + icon + '"></i>');
+            $('#span_'+padUri.checksum()).attr('data-padUsers', JSON.stringify(data.data.padUsers));
+        }
+        else{
+            alert('getPadUsers '+padUri+' : '+data.message);
+        }
+    });
+}
+
+setInterval("listPads()", 1000*60);
         </script>
 </html>
