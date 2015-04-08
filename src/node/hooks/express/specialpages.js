@@ -43,6 +43,14 @@ exports.expressCreateServer = function (hook_name, args, cb) {
     }));
   });
 
+  args.app.get('/c/:pad', function(req, res, next)
+  {
+    res.send(eejs.require("ep_etherpad-lite/templates/ctf.html", {
+      pad: req.params.pad,
+    }));
+  });
+
+
   //serve timeslider.html under /p/$padname/timeslider
   args.app.get('/p/:pad/timeslider', function(req, res, next)
   {

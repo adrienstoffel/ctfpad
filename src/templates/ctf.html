@@ -1,0 +1,287 @@
+<%
+  var settings = require("ep_etherpad-lite/node/utils/Settings");
+%>
+<!doctype html>
+<html>
+
+        <title><%= pad %></title>
+    <script>
+      /*
+      |@licstart  The following is the entire license notice for the
+      JavaScript code in this page.|
+
+      Copyright 2011 Peter Martischka, Primary Technology.
+
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+
+      |@licend  The above is the entire license notice
+      for the JavaScript code in this page.|
+      */
+    </script>
+
+        <meta charset="utf-8"> 
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+        <link rel="shortcut icon" href="<%=settings.favicon%>">
+
+        <link rel="localizations" type="application/l10n+json" href="/locales.json">
+	<script type="text/javascript" src="../static/js/require-kernel.js"></script>
+        <script type="text/javascript" src="/static/js/apikey.js"></script>
+        <script type="text/javascript" src="/static/js/html10n.js"></script>
+        <script type="text/javascript" src="/static/js/l10n.js"></script>
+        <script type="text/javascript" src="/static/js/jquery.js"></script>
+        <script type="text/javascript" src="/static/js/lodash.min.js"></script>
+        <script type="text/javascript" src="/static/js/ZeroClipboard.min.js"></script>
+        <style>
+            html, body {
+              height: 100%;
+            }
+            body {
+              margin: 0;
+              color: #333;
+              font: 14px helvetica, sans-serif;
+              background: #ddd;
+              background: -webkit-radial-gradient(circle,#aaa,#eee 60%) center fixed;
+              background: -moz-radial-gradient(circle,#aaa,#eee 60%) center fixed;
+              background: -ms-radial-gradient(circle,#aaa,#eee 60%) center fixed;
+              background: -o-radial-gradient(circle,#aaa,#eee 60%) center fixed;
+              border-top: 8px solid rgba(51,51,51,.8);
+            }
+            #left{
+              float:left;
+              width:30%;
+            }
+            #right{
+              float:right;
+              width:70%;
+            }
+            #right iframe{
+              height:96vh;
+              width:96%;
+            }
+            .done{
+              text-decoration: line-through;
+            }
+            
+        </style>
+        <link href="/static/custom/index.css" rel="stylesheet"> 
+        <div id="left" style="1px solid black; ">
+        <h1><%= pad %></h1>
+        <a id="link" href="#" target="_blank"><%= pad %> link</a><br />
+        <input id="username" type="text" value="" readonly=""><button id="copyu" data-clipboard-text="">Copy</button><br />
+        <input id="password" type="password" value="" readonly=""><button id="copyp" data-clipboard-text="">Copy</button><br />
+        <h2>Add task</h2>
+        <label>Task name : <input type="text" id="taskName"></label><br />
+        <label>Category : 
+          <select id="categories">
+          </select>
+        </label>
+        <input style="display:none" type="text" id="taskCategory"><br />
+        <button id="newTask">Add task</button>
+        <h2>Pads</h2>
+        <div id="pads">
+        </div>
+        </div>
+        <div id="right">
+          <iframe id="thePad" src=""></iframe>
+        </div>
+        <script>
+        var pathComponents = location.pathname.split('/');
+
+              // Strip 'p' and the padname from the pathname and set as baseURL
+              var baseURL = pathComponents.slice(0,pathComponents.length-2).join('/') + '/';
+        require.setRootURI(baseURL + "javascripts/src");
+              require.setLibraryURI(baseURL + "javascripts/lib");
+              require.setGlobalKeyPath("require");
+        browser = require('ep_etherpad-lite/static/js/browser').browser;
+        if ((!browser.msie) && (!(browser.mozilla && browser.version.indexOf("1.8.") == 0))) {
+                document.domain = document.domain; // for comet
+              }
+
+        String.prototype.checksum = function() {
+    var hash = 0, i, chr, len;
+    if (this.length === 0){
+        return hash;
+    }
+    for (i = 0, len = this.length; i < len; i++) {
+        chr   = this.charCodeAt(i);
+        hash  = ((hash << 5) - hash) + chr;
+        hash |= 0;
+    }
+    return hash.toString();
+};
+        new ZeroClipboard( document.getElementById("copyp") );
+        new ZeroClipboard( document.getElementById("copyu") );
+        CTF = {};
+        $('#newTask').click(function(e){
+          if($('#categories').val() === 'new'){
+            var category = $('#taskCategory').val();
+          }
+          else{
+            var category = $('#categories').val();
+          }
+          var taskName = $('#taskName').val();
+          if(category !== '' && taskName !== ''){
+            var params = $.param({
+              padID: taskName,
+              text: taskName+' - '+category
+            });
+            $.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
+              if(data.code===0){
+                $('#taskCategory').val('');
+                $('#taskName').val('');
+                $('#categories').val('');
+                $('#thePad').attr('src', '/p/'+taskName);
+                if(typeof CTF.pads[category] === 'undefined'){
+                  CTF.pads[category] = [];
+                }
+                CTF.pads[category].push({name: taskName, done: false});
+
+                var newParams = $.param({
+                  padID: '<%= pad %>',
+                  text: btoa(JSON.stringify(CTF))
+                });
+
+                $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function( data ) {
+                  if(data.code===0){
+                    listPads();
+                  }
+                  else{
+                    alert(data.message);
+                  }
+                });
+                
+              }
+              else{
+                alert(data.message);
+              }
+            });
+          }
+          else{
+            alert('Please select a category or a name');
+          }
+        });
+
+        $('#categories').change(function(e){
+          if(e.target.value === 'new'){
+            $('#taskCategory').css('display', 'inline');
+            $('#taskCategory').focus();
+          }
+          else{
+            $('#taskCategory').css('display', 'none');
+          }
+        });
+        listPads();
+        if(document.location.hash.length > 1){
+          loadPad();
+        }
+
+        $('#pads').on('click', '.chkbx', function(e){
+          var hash = $(e.target).parent().children('a').attr('href').substring(1);
+          done(hash, $(e.target).is(':checked'));
+        });
+
+        function loadPad(){
+          $('#thePad').attr('src', '/p/'+window.location.hash.substring(1));
+        }
+	
+	function printUsers(span){
+            var padUsers = JSON.parse($(span).attr('data-padusers'));
+            var users = [];
+            padUsers.forEach(function(user){
+                users.push(user.name);
+            });
+            console.log(users);
+        }
+
+        function listPads(){
+          var params = $.param({
+            padID: '<%= pad %>'
+          });
+          
+          $.get("/api/1.2.9/getText?apikey="+APIKEY+"&"+params, function( data ) {
+            if(data.code===0){
+              CTF = JSON.parse(atob(data.data.text));
+              $('#link').attr('href', CTF.url);
+              $('#copyu').attr('data-clipboard-text', CTF.username);
+              $('#copyp').attr('data-clipboard-text', CTF.password);
+              $('#username').val(CTF.username);
+              $('#password').val(CTF.password);
+                $('#categories').html('');
+                $('#pads').html('');
+                $('#categories').append($('<option/>', { value: '', text : '----Select----' }));
+                $('#categories').append($('<option/>', { value: 'new', text : 'New category' }));
+                var pads = CTF.pads;
+                for (var category in pads){
+                  $('#categories').append($('<option/>', { value: category, text : category }));
+                  $('#pads').append($('<h3/>', {text: category}));
+                  var ul = $('<ul/>');
+                  pads[category].forEach(function(pad){
+                    var line = $('<li/>');
+                    getPadUsers(pad.name);
+                    if(pad.done){
+                      line.append($('<input/>', {class: 'chkbx', type: 'checkbox', checked: 'checked'}));
+                      line.append($('<a/>', {class: 'done', id: 'a_'+pad.name.checksum(), text: pad.name, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
+                    }
+                    else{
+                      line.append($('<input/>', {class: 'chkbx', type: 'checkbox'}));
+                      line.append($('<a/>', {id: 'a_'+pad.name.checksum(), text: pad.name, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
+                    }
+                    line.append($('<span/>', {id: 'span_'+pad.name.checksum(), text: 0, onmouseover: 'printUsers(this);'}));
+                    ul.append(line);
+                  });
+                  $('#pads').append(ul);
+                }
+              }
+              else{
+                alert(data.message);
+              }
+            });
+        }
+
+        function done(padUri, d){
+          for (var category in CTF.pads){
+            CTF.pads[category].forEach(function(pad){
+              if(pad.name===padUri){
+                pad.done = d;
+              }
+            });
+          }
+          var newParams = $.param({
+            padID: '<%= pad %>',
+            text: btoa(JSON.stringify(CTF))
+          });
+          $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function( data ) {
+            if(data.code===0){
+              listPads();
+            }
+            else{
+              alert(data.message);
+            }
+          });
+        }
+
+        function getPadUsers(padUri){
+          $.get("/api/1.2.9/padUsers?apikey="+APIKEY+"&padID="+padUri, function( data ) {
+            if(data.code===0){
+              $('#span_'+padUri.checksum()).text(data.data.padUsers.length);
+              $('#span_'+padUri.checksum()).attr('data-padUsers', JSON.stringify(data.data.padUsers));
+            }
+            else{
+              alert('getPadUsers '+padUri+' : '+data.message);
+            }
+          });
+        }
+
+        setInterval("listPads()", 1000*60);
+        </script>
+</html>
