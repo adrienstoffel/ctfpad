@@ -472,7 +472,7 @@
 
                     categories.sort().forEach(function(category) {
                         $('#categories').append($('<option/>', { value: category, text : category }));
-                        $('#pads').append($('<h3/>', {text: category}));
+                        $('#pads').append($('<h5/>', {text: category}));
                         var ul = $('<ul/>', {class: 'list-unstyled'});
 
                         pads[category]
