@@ -212,6 +212,10 @@
         <div class="container">
         <div id="left" style="1px solid black;">
           <div class="box">
+            <span class="pull-right">
+                <br />
+                <a id="refreshPage" href="#"><i class="fa fa-refresh fa-lg"></i></a>
+            </span>
             <h3><%= pad %></h3>
             <p>
                 <strong><i class="fa fa-link"></i> Link:</strong>
@@ -299,6 +303,10 @@
 
         CTF = {};
 
+        $('#refreshPage').click(function() {
+            listPads();
+        });
+
         $('#newTask').click(function(e){
             if($('#categories').val() === 'new'){
                 var category = $('#taskCategory').val();
@@ -376,7 +384,9 @@
                 $('#newCategory').css('display', 'none');
             }
         });
+
         listPads();
+
         if(document.location.hash.length > 1){
             loadPad();
         }
@@ -479,7 +489,7 @@
                                         id: 'a_'+pad.name.checksum(),
                                         text: padText,
                                         href: '#'+pad.name,
-                                        onclick: 'setTimeout(function(){ loadPad(); }, 500)'
+                                        onclick: 'setTimeout(function(){ loadPad(); listPads(); }, 500)'
                                     }));
                                 }
                                 else{
@@ -489,7 +499,7 @@
                                         id: 'a_'+pad.name.checksum(),
                                         text: padText,
                                         href: '#'+pad.name,
-                                        onclick: 'setTimeout(function(){ loadPad(); }, 500)'
+                                        onclick: 'setTimeout(function(){ loadPad(); listPads(); }, 500)'
                                     }));
                                 }
                                 line.append($('<span/>', {id: 'span_'+pad.name.checksum(), text: 0, onmouseover: 'printUsers(this);', class: 'pull-right'}));
