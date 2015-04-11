@@ -44,6 +44,7 @@
         <script type="text/javascript" src="/static/js/lodash.min.js"></script>
         <script type="text/javascript" src="/static/js/ZeroClipboard.min.js"></script>
         <script type="text/javascript" src="/static/bootstrap/js/bootstrap.min.js"></script>
+        <!--<script type="text/javascript" src="/static/validator.min.js"></script>-->
         <style>
             html, body {
               height: 100%;
@@ -80,7 +81,7 @@
               height: 90vh;
               width: 100%;
             }
-            .done{
+            .solved{
               text-decoration: line-through;
             }
             .box {
@@ -107,7 +108,13 @@
                 <div id="navbar" class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
                         <li><a href="/"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="active"><a href="#"><i class="fa fa-flag"></i> CTF</a></li>
+                        <li class="dropdown active">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-flag"></i> CTF <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <li><a href="#addTaskModal" data-toggle="modal" data-target="#addTaskModal"><i class="fa fa-plus"></i> Add task</a></li>
+                                <li><a href="#editTaskModal" data-toggle="modal" data-target="#editTaskModal"><i class="fa fa-edit"></i> Edit task</a></li>
+                            </ul>
+                        </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li style="padding: 7px;">
@@ -124,6 +131,74 @@
             </div>
         </nav>
 
+        <div class="modal fade" id="addTaskModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h3 class="modal-title">Add task</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                          <form id="addTaskForm" role="form" data-toggle="validator">
+                            <label for="taskName" class="control-label">Task name:</label>
+                            <input id="taskName" type="text" class="form-control" placeholder="enter the task name" required>
+                            <label for="taskPoints" class="control-label">Task points:</label>
+                            <input id="taskPoints" type="text" class="form-control" placeholder="enter the task points" pattern="^([0-9]){1,10}$" maxlength="10">
+                            <label for="categories" class="control-label">Category:</label>
+                            <select id="categories" class="form-control"></select>
+                            <div id="newCategory" class="group-control" style="display:none">
+                                <label for="taskCategory" class="control-label">New category:</label>
+                                <input type="text" id="taskCategory" class="form-control" placeholder="enter the category name"><br />
+                            </div>
+                            <br />
+                          </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button id="newTask" class="btn btn-primary">
+                            <i class="fa fa-plus"></i> Add task
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editTaskModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h3 class="modal-title">Edit task</h3>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                          <form id="editTaskForm" role="form" data-toggle="validator">
+                            <label for="taskName" class="control-label">Task name:</label>
+                            <input id="taskName" type="text" class="form-control" placeholder="enter the task name" required>
+                            <label for="taskPoints" class="control-label">Task points:</label>
+                            <input id="taskPoints" type="text" class="form-control" placeholder="enter the task points" pattern="^([0-9]){1,10}$" maxlength="10">
+                            <label for="categories" class="control-label">Category:</label>
+                            <select id="categories" class="form-control"></select>
+                            <div id="newCategory" class="group-control" style="display:none">
+                                <label for="taskCategory" class="control-label">New category:</label>
+                                <input type="text" id="taskCategory" class="form-control" placeholder="enter the category name"><br />
+                            </div>
+                            <br />
+                          </form>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button id="editTask" class="btn btn-primary">
+                            <i class="fa fa-edit"></i> Edit task
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="container">
         <div id="left" style="1px solid black;">
           <div class="box">
@@ -133,14 +208,14 @@
                 <a id="link" href="#" target="_blank"><%= pad %> site</a><br />
             </p>
 
-            <p><a href="#" id="credsview"><i class="fa fa-plus-square-o"></i> Credentials</a></p>
+            <p><strong>Credentials</strong> <a href="#" id="credsview"><i class="fa fa-plus-square-o"></i></a></p>
             <div class="form-group" id="credentials">
                 <label for="username">Username:</label>
                 <div class="input-group">
                     <input id="username" type="text" value="" readonly="" class="form-control">
                     <div class="input-group-btn">
                         <button id="copyu" data-clipboard-text="" class="btn btn-primary">
-                            <i class="fa fa-edit"></i> Copy
+                            <i class="fa fa-paste"></i> Copy
                         </button>
                     </div>
                 </div>
@@ -149,7 +224,7 @@
                     <input id="password" type="password" value="" readonly="" class="form-control">
                     <div class="input-group-btn">
                         <button id="copyp" data-clipboard-text="" class="btn btn-primary">
-                            <i class="fa fa-edit"></i> Copy
+                            <i class="fa fa-paste"></i> Copy
                         </button>
                     </div>
                 </div>
@@ -158,7 +233,7 @@
             <p><strong>Progression:</strong></p>
             <div class="progress">
               <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 60%; min-width: 2em;">
-                 <span style="color: black;">xx / yy challs pwned (60%) </span>
+                 <span style="color: black;">xx / yy solved (60%) </span>
               </div>
             </div>
             <div class="progress">
@@ -172,20 +247,6 @@
             <div id="pads">No pads yet...</div>
           </div>
 
-          <div class="box">
-            <h3>Add task</h3>
-
-            <div class="form-group">
-                <label for="taskName">Task name:</label>
-                <input id="taskName" type="text" class="form-control" placeholder="enter the task name">
-                <label for="categories">Category:</label>
-                <select id="categories" class="form-control"></select>
-                <input style="display:none" type="text" id="taskCategory" class="form-control"><br />
-                <button id="newTask" class="btn btn-primary">
-                    <i class="fa fa-plus"></i> Add task
-                </button>
-            </div>
-          </div>
         </div>
 
         <div id="right">
@@ -226,30 +287,51 @@
         CTF = {};
 
         $('#newTask').click(function(e){
-          if($('#categories').val() === 'new'){
-            var category = $('#taskCategory').val();
-          }
-          else{
-            var category = $('#categories').val();
-          }
-          var taskName = $('#taskName').val();
+            if($('#categories').val() === 'new'){
+                var category = $('#taskCategory').val();
+            } else{
+                var category = $('#categories').val();
+            }
+            var taskName = $('#taskName').val();
+            var taskPoints = $('#taskPoints').val();
 
-          if(category !== '' && taskName !== ''){
+            if (category === '') {
+                alert("Please choose a category");
+                return;
+            }
+
+            if (taskName === '') {
+                alert("Please enter a task name");
+                return;
+            }
+
+            if (isNaN(parseInt(taskPoints, 10)) || taskPoints != parseInt(taskPoints, 10)) {
+                alert("Please enter a valid amount of points");
+                return;
+            }
+
             var params = $.param({
-              padID: taskName,
-              text: taskName+' - '+category
+                padID: taskName,
+                text: taskName+' - '+category
             });
 
             $.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
                 if(data.code===0){
                     $('#taskCategory').val('');
                     $('#taskName').val('');
+                    $('#taskPonts').val('');
                     $('#categories').val('');
                     $('#thePad').attr('src', '/p/'+taskName);
+
                     if(typeof CTF.pads[category] === 'undefined'){
                         CTF.pads[category] = [];
                     }
-                    CTF.pads[category].push({name: taskName, done: false});
+                    CTF.pads[category].push({
+                        name: taskName,
+                        points: taskPoints,
+                        removed: false,
+                        solved: false
+                    });
 
                     var newParams = $.param({
                         padID: '<%= pad %>',
@@ -270,19 +352,15 @@
                     alert(data.message);
                 }
             });
-          }
-          else{
-              alert('Please select a category or a name');
-          }
         });
 
         $('#categories').change(function(e){
             if(e.target.value === 'new'){
-                $('#taskCategory').css('display', 'inline');
+                $('#newCategory').css('display', 'inline');
                 $('#taskCategory').focus();
             }
             else{
-                $('#taskCategory').css('display', 'none');
+                $('#newCategory').css('display', 'none');
             }
         });
         listPads();
@@ -292,7 +370,7 @@
 
         $('#pads').on('click', '.chkbx', function(e){
             var hash = $(e.target).parent().children('a').attr('href').substring(1);
-            done(hash, $(e.target).is(':checked'));
+            solve(hash, $(e.target).is(':checked'));
         });
 
         function loadPad(){
@@ -335,30 +413,38 @@
                 $('#categories').append($('<option/>', { value: '', text : '---- Select a category ----' }));
                 $('#categories').append($('<option/>', { value: 'new', text : 'New category' }));
 
-                for (var category in pads){
+                var categories = [];
+                for (var key in pads) {
+                    categories.push(key);
+                }
+
+                categories.sort().forEach(function(category) {
                     $('#categories').append($('<option/>', { value: category, text : category }));
                     $('#pads').append($('<h3/>', {text: category}));
                     var ul = $('<ul/>', {class: 'list-unstyled'});
 
-                    pads[category].forEach(function(pad){
+                    pads[category]
+                        .sort(function(a, b) { return (a.points > b.points); })
+                        .forEach(function(pad){
                         var line = $('<li/>');
                         getPadUsers(pad.name);
 
-                        if(pad.done){
+                        padText = "[" + pad.points + "] " + pad.name;
+                        if(pad.solved){
                             line.append($('<input/>', {class: 'chkbx', type: 'checkbox', checked: 'checked'}));
                             line.append('&nbsp;&nbsp;');
-                            line.append($('<a/>', {class: 'done', id: 'a_'+pad.name.checksum(), text: pad.name, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
+                            line.append($('<a/>', {class: 'solved', id: 'a_'+pad.name.checksum(), text: padText, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
                         }
                         else{
                             line.append($('<input/>', {class: 'chkbx', type: 'checkbox'}));
                             line.append('&nbsp;&nbsp;');
-                            line.append($('<a/>', {id: 'a_'+pad.name.checksum(), text: pad.name, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
+                            line.append($('<a/>', {id: 'a_'+pad.name.checksum(), text: padText, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
                         }
                         line.append($('<span/>', {id: 'span_'+pad.name.checksum(), text: 0, onmouseover: 'printUsers(this);', class: 'pull-right'}));
                         ul.append(line);
                     });
                     $('#pads').append(ul);
-                }
+                });
             }
             else{
                 alert(data.message);
@@ -366,19 +452,21 @@
         });
     }
 
-function done(padUri, d){
+function solve(padUri, d){
     for (var category in CTF.pads){
         CTF.pads[category].forEach(function(pad){
             if(pad.name===padUri){
-                pad.done = d;
+                pad.solved = d;
             }
         });
     }
+
     var newParams = $.param({
         padID: '<%= pad %>',
         text: btoa(JSON.stringify(CTF))
     });
-    $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function( data ) {
+
+    $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function(data) {
         if(data.code===0){
             listPads();
         }
@@ -423,6 +511,7 @@ function getPadUsers(padUri){
 setInterval("listPads()", 1000*60);
         </script>
         <script>
+            $("#credentials").hide();
            $("#credsview").click(function(){
                $("#credentials").toggle("slow");
            });
