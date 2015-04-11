@@ -91,7 +91,17 @@
                 border: 1px solid rgb(158, 158, 158);
                 border-radius: 10px;
             }
+            .progress {
+                position: relative;
+            }
 
+            .progress span {
+                position: absolute;
+                display: block;
+                width: 100%;
+                color: rgb(84, 84, 84);
+                font-weight: bold;
+            }
         </style>
         <link href="/static/custom/index.css" rel="stylesheet">
         <nav id="ctfmenu" class="navbar navbar-static-top navbar-inverse">
@@ -204,11 +214,14 @@
           <div class="box">
             <h3><%= pad %></h3>
             <p>
-                <strong>Link:</strong>
+                <strong><i class="fa fa-link"></i> Link:</strong>
                 <a id="link" href="#" target="_blank"><%= pad %> site</a><br />
             </p>
 
-            <p><strong>Credentials</strong> <a href="#" id="credsview"><i class="fa fa-plus-square-o"></i></a></p>
+            <p><strong><i class="fa fa-key"></i> Credentials</strong>
+            <a href="#" class="credsview"><i id="credsIconPlus" class="fa fa-plus-square-o"></i></a>
+            <a href="#" class="credsview"><i id="credsIconMinus" class="fa fa-minus-square-o"></i></a>
+            </p>
             <div class="form-group" id="credentials">
                 <label for="username">Username:</label>
                 <div class="input-group">
@@ -230,14 +243,14 @@
                 </div>
             </div>
 
-            <p><strong>Progression:</strong></p>
+            <p><strong><i class="fa fa-line-chart"></i> Progression:</strong></p>
             <div class="progress">
-              <div class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 60%; min-width: 2em;">
+              <div id="solveProgression" class="progress-bar progress-bar-success progress-bar-striped" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%; min-width: 2em;">
                  <span style="color: black;">xx / yy solved (60%) </span>
               </div>
             </div>
             <div class="progress">
-              <div class="progress-bar progress-bar-warning progress-bar-striped" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 40%; min-width: 2em;">
+              <div id="pointsProgression" class="progress-bar progress-bar-warning progress-bar-striped" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%; min-width: 2em;">
                 <span style="color: black;">aa / bb points (40%)</span>
               </div>
             </div>
@@ -391,66 +404,105 @@
                 padID: '<%= pad %>'
             });
 
-        $.get("/api/1.2.9/getText?apikey="+APIKEY+"&"+params, function( data ) {
-            if(data.code===0){
-                CTF = JSON.parse(atob(data.data.text));
+            $.get("/api/1.2.9/getText?apikey="+APIKEY+"&"+params, function( data ) {
+                if(data.code===0){
+                    CTF = JSON.parse(atob(data.data.text));
 
-                $('#link').attr('href', CTF.url);
-                $('#copyu').attr('data-clipboard-text', CTF.username);
-                $('#copyp').attr('data-clipboard-text', CTF.password);
-                $('#username').val(CTF.username);
-                $('#password').val(CTF.password);
-                $('#categories').html('');
+                    $('#link').attr('href', CTF.url);
+                    $('#copyu').attr('data-clipboard-text', CTF.username);
+                    $('#copyp').attr('data-clipboard-text', CTF.password);
+                    $('#username').val(CTF.username);
+                    $('#password').val(CTF.password);
+                    $('#categories').html('');
 
-                var pads = CTF.pads;
+                    var pads = CTF.pads;
 
-                if (!jQuery.isEmptyObject(CTF.pads)) {
-                    $('#pads').html('');
-                } else {
-                    $('#pads').html('<h4>No tasks yet...</h4>');
-                }
+                    var categories = [];
+                    var solved = 0;
+                    var tasks = 0;
+                    var score = 0;
+                    var maxScore = 0;
 
-                $('#categories').append($('<option/>', { value: '', text : '---- Select a category ----' }));
-                $('#categories').append($('<option/>', { value: 'new', text : 'New category' }));
+                    for (var key in pads) {
+                        categories.push(key);
+                    }
 
-                var categories = [];
-                for (var key in pads) {
-                    categories.push(key);
-                }
-
-                categories.sort().forEach(function(category) {
-                    $('#categories').append($('<option/>', { value: category, text : category }));
-                    $('#pads').append($('<h3/>', {text: category}));
-                    var ul = $('<ul/>', {class: 'list-unstyled'});
-
-                    pads[category]
-                        .sort(function(a, b) { return (a.points > b.points); })
-                        .forEach(function(pad){
-                        var line = $('<li/>');
-                        getPadUsers(pad.name);
-
-                        padText = "[" + pad.points + "] " + pad.name;
-                        if(pad.solved){
-                            line.append($('<input/>', {class: 'chkbx', type: 'checkbox', checked: 'checked'}));
-                            line.append('&nbsp;&nbsp;');
-                            line.append($('<a/>', {class: 'solved', id: 'a_'+pad.name.checksum(), text: padText, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
-                        }
-                        else{
-                            line.append($('<input/>', {class: 'chkbx', type: 'checkbox'}));
-                            line.append('&nbsp;&nbsp;');
-                            line.append($('<a/>', {id: 'a_'+pad.name.checksum(), text: padText, href: '#'+pad.name, onclick: 'setTimeout(function(){ loadPad(); }, 500)'}));
-                        }
-                        line.append($('<span/>', {id: 'span_'+pad.name.checksum(), text: 0, onmouseover: 'printUsers(this);', class: 'pull-right'}));
-                        ul.append(line);
+                    categories.forEach(function(category) {
+                        pads[category].forEach(function(pad) {
+                            if (pad.solved) {
+                                solved++;
+                                score += parseInt(pad.points, 10);
+                            }
+                            tasks++;
+                            maxScore += parseInt(pad.points, 10);
+                        });
                     });
-                    $('#pads').append(ul);
-                });
-            }
-            else{
-                alert(data.message);
-            }
-        });
-    }
+
+                    solveProgress = Math.round((solved / tasks) * 100);
+                    pointsProgress = Math.round((score / maxScore) * 100);
+
+                    $('#solveProgression').attr('aria-valuenow', solveProgress);
+                    $('#solveProgression').attr('style', "width: " + solveProgress + "%; min-width: 2em;");
+                    $('#solveProgression').html('<span>' + solved + ' / ' + tasks + ' solved (' + solveProgress + '%)</span>');
+
+                    $('#pointsProgression').attr('aria-valuenow', pointsProgress);
+                    $('#pointsProgression').attr('style', "width: " + pointsProgress + "%; min-width: 2em;");
+                    $('#pointsProgression').html('<span>' + score + ' / ' + maxScore + ' pts (' + pointsProgress + '%)</span>');
+
+
+                    if (!jQuery.isEmptyObject(CTF.pads)) {
+                        $('#pads').html('');
+                    } else {
+                        $('#pads').html('<h4>No tasks yet...</h4>');
+                    }
+
+                    $('#categories').append($('<option/>', { value: '', text : '---- Select a category ----' }));
+                    $('#categories').append($('<option/>', { value: 'new', text : 'New category' }));
+
+                    categories.sort().forEach(function(category) {
+                        $('#categories').append($('<option/>', { value: category, text : category }));
+                        $('#pads').append($('<h3/>', {text: category}));
+                        var ul = $('<ul/>', {class: 'list-unstyled'});
+
+                        pads[category]
+                            .sort(function(a, b) { return (a.points > b.points); })
+                            .forEach(function(pad){
+                                var line = $('<li/>');
+                                getPadUsers(pad.name);
+
+                                padText = "[" + pad.points + "] " + pad.name;
+                                if(pad.solved){
+                                    line.append($('<input/>', {class: 'chkbx', type: 'checkbox', checked: 'checked'}));
+                                    line.append('&nbsp;&nbsp;');
+                                    line.append($('<a/>', {
+                                        class: 'solved',
+                                        id: 'a_'+pad.name.checksum(),
+                                        text: padText,
+                                        href: '#'+pad.name,
+                                        onclick: 'setTimeout(function(){ loadPad(); }, 500)'
+                                    }));
+                                }
+                                else{
+                                    line.append($('<input/>', {class: 'chkbx', type: 'checkbox'}));
+                                    line.append('&nbsp;&nbsp;');
+                                    line.append($('<a/>', {
+                                        id: 'a_'+pad.name.checksum(),
+                                        text: padText,
+                                        href: '#'+pad.name,
+                                        onclick: 'setTimeout(function(){ loadPad(); }, 500)'
+                                    }));
+                                }
+                                line.append($('<span/>', {id: 'span_'+pad.name.checksum(), text: 0, onmouseover: 'printUsers(this);', class: 'pull-right'}));
+                                ul.append(line);
+                            });
+                        $('#pads').append(ul);
+                    });
+                }
+                else{
+                    alert(data.message);
+                }
+            });
+        }
 
 function solve(padUri, d){
     for (var category in CTF.pads){
@@ -512,8 +564,12 @@ setInterval("listPads()", 1000*60);
         </script>
         <script>
             $("#credentials").hide();
-           $("#credsview").click(function(){
-               $("#credentials").toggle("slow");
-           });
+            $("#credsIconMinus").hide();
+
+            $(".credsview").click(function(){
+                $("#credentials").toggle("slow");
+                $("#credsIconPlus").toggle("slow");
+                $("#credsIconMinus").toggle("slow");
+            });
         </script>
 </html>
