@@ -177,20 +177,20 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h3 class="modal-title">Edit task</h3>
+                        <h3 class="modal-title">Edit task (Not working yet)</h3>
                     </div>
                     <div class="modal-body">
                         <div class="form-group">
                           <form id="editTaskForm" role="form" data-toggle="validator">
-                            <label for="taskName" class="control-label">Task name:</label>
-                            <input id="taskName" type="text" class="form-control" placeholder="enter the task name" required>
-                            <label for="taskPoints" class="control-label">Task points:</label>
-                            <input id="taskPoints" type="text" class="form-control" placeholder="enter the task points" pattern="^([0-9]){1,10}$" maxlength="10">
-                            <label for="categories" class="control-label">Category:</label>
-                            <select id="categories" class="form-control"></select>
-                            <div id="newCategory" class="group-control" style="display:none">
-                                <label for="taskCategory" class="control-label">New category:</label>
-                                <input type="text" id="taskCategory" class="form-control" placeholder="enter the category name"><br />
+                            <label for="chooseTask" class="control-label">Choose a task:</label>
+                            <select id="chooseTask" class="form-control"></select>
+                            <div id="editTask" class="group-control" style="display:none">
+                                <label for="editTaskName" class="control-label">Task name:</label>
+                                <input id="editTaskName" type="text" class="form-control" placeholder="enter the task name" required>
+                                <label for="editTaskPoints" class="control-label">Task points:</label>
+                                <input id="editTaskPoints" type="text" class="form-control" placeholder="enter the task points" pattern="^([0-9]){1,10}$" maxlength="10">
+                                <label for="editCategories" class="control-label">Category:</label>
+                                <select id="editCategories" class="form-control"></select>
                             </div>
                             <br />
                           </form>
@@ -382,6 +382,36 @@
             }
         });
 
+        $('#chooseTask').change(function(e){
+            if (e.target.value == '') {
+                $('#editTask').css('display', 'none');
+            } else {
+                $('#editTask').css('display', 'inline');
+                $('#editTaskName').val($('#chooseTask').val());
+
+                $('#editCategories').html('');
+                $('#editCategories').append($('<option/>', { value: '', text : '---- Select a category ----' }));
+
+                for (var category in CTF.pads) {
+                    selected = false;
+                    CTF.pads[category].forEach(function(task) {
+                        if (task.name == $('#chooseTask').val()) {
+                            selected = true;
+                            $('#editTaskPoints').val(task.points);
+                        }
+                    });
+
+                    if (selected) {
+                        $('#editCategories').append($('<option/>',
+                                    { value: category, text : category, selected : 'selected'}));
+                    } else {
+                        $('#editCategories').append($('<option/>',
+                                    { value: category, text : category}));
+                    }
+                };
+            }
+        });
+
         listPads();
 
         if(document.location.hash.length > 1){
@@ -447,6 +477,7 @@
                     $('#username').val(CTF.username);
                     $('#password').val(CTF.password);
                     $('#categories').html('');
+                    $('#chooseTask').html('');
 
                     var pads = CTF.pads;
 
@@ -471,8 +502,8 @@
                         });
                     });
 
-                    solveProgress = Math.round((solved / tasks) * 100);
-                    pointsProgress = Math.round((score / maxScore) * 100);
+                    solveProgress = solved ? Math.round((solved / tasks) * 100) : 0;
+                    pointsProgress = score ? Math.round((score / maxScore) * 100) : 0;
 
                     $('#solveProgression').attr('aria-valuenow', solveProgress);
                     $('#solveProgression').attr('style', "width: " + solveProgress + "%; min-width: 2em;");
@@ -491,6 +522,10 @@
 
                     $('#categories').append($('<option/>', { value: '', text : '---- Select a category ----' }));
                     $('#categories').append($('<option/>', { value: 'new', text : 'New category' }));
+                    $('#chooseTask').append($('<option/>', {
+                        value: '',
+                        text: '---- Select a task ----'
+                    }));
 
                     categories.sort().forEach(function(category) {
                         $('#categories').append($('<option/>', { value: category, text : category }));
@@ -500,6 +535,10 @@
                         pads[category]
                             .sort(function(a, b) { return (a.points > b.points); })
                             .forEach(function(pad){
+                                $('#chooseTask').append($('<option/>', {
+                                    value: pad.name,
+                                    text: '[' + pad.points + '] ' + pad.name,
+                                }));
                                 var line = $('<li/>');
                                 getPadUsers(pad.name);
 
@@ -537,70 +576,69 @@
             });
         }
 
+
 function solve(padUri, d){
     for (var category in CTF.pads){
         CTF.pads[category].forEach(function(pad){
             if(pad.name.split('---')[1]===padUri){
                 pad.solved = d;
             }
-        });
-    }
 
-    var newParams = $.param({
-        padID: '<%= pad %>',
-        text: btoa(JSON.stringify(CTF))
-    });
-
-    $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function(data) {
-        if(data.code===0){
-            listPads();
-        }
-        else{
-            alert(data.message);
-        }
-    });
-}
-
-function getPadUsers(padUri){
-    $.get("/api/1.2.9/padUsers?apikey="+APIKEY+"&padID="+padUri, function( data ) {
-        if(data.code===0){
-            if (data.data.padUsers.length == 0) {
-                icon = "fa fa-user-times";
-                color = "text-muted";
-            } else if (data.data.padUsers.length == 1) {
-                icon = "fa fa-user";
-                color = "text-success";
-            } else {
-                icon = "fa fa-users";
-                color = "text-success";
-            }
-
-            var users = [];
-            data.data.padUsers.forEach(function(user) {
-                users.push(user.name);
+            var newParams = $.param({
+                padID: '<%= pad %>',
+                text: btoa(JSON.stringify(CTF))
             });
 
-            tooltip = $('<div/>').text(users.join(' ')).html();
-
-            $('#span_'+padUri.checksum()).html(
-                    '<span data-toggle="tooltip" data-placement="right" title="' + tooltip + '" class="' + color + '">' +
-                    data.data.padUsers.length +
-                    ' <a href="#" class="' + color +'">' +
-                    '<i class="fa ' + icon + '"></i>' +
-                    '</span>');
-            $('#span_'+padUri.checksum()).attr('data-padUsers', JSON.stringify(data.data.padUsers));
+            $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function(data) {
+                if(data.code===0){
+                    listPads();
+                }
+                else{
+                    alert(data.message);
+                }
+            });
         }
-        else{
-            alert('getPadUsers '+padUri+' : '+data.message);
+
+        function getPadUsers(padUri){
+            $.get("/api/1.2.9/padUsers?apikey="+APIKEY+"&padID="+padUri, function( data ) {
+                if(data.code===0){
+                    if (data.data.padUsers.length == 0) {
+                        icon = "fa fa-user-times";
+                        color = "text-muted";
+                    } else if (data.data.padUsers.length == 1) {
+                        icon = "fa fa-user";
+                        color = "text-success";
+                    } else {
+                        icon = "fa fa-users";
+                        color = "text-success";
+                    }
+
+                    var users = [];
+                    data.data.padUsers.forEach(function(user) {
+                        users.push(user.name);
+                    });
+
+                    tooltip = $('<div/>').text(users.join(' ')).html();
+
+                    $('#span_'+padUri.checksum()).html(
+                            '<span data-toggle="tooltip" data-placement="right" title="' + tooltip + '" class="' + color + '">' +
+                            data.data.padUsers.length +
+                            ' <a href="#" class="' + color +'">' +
+                            '<i class="fa ' + icon + '"></i>' +
+                            '</span>');
+                    $('#span_'+padUri.checksum()).attr('data-padUsers', JSON.stringify(data.data.padUsers));
+                }
+                else{
+                    alert('getPadUsers '+padUri+' : '+data.message);
+                }
+            });
+
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+            });
         }
-    });
 
-    $(function () {
-        $('[data-toggle="tooltip"]').tooltip()
-    });
-}
-
-setInterval("listPads()", 1000*60);
+        setInterval("listPads()", 1000*60);
         </script>
         <script>
             $("#credentials").hide();

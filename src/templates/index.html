@@ -29,7 +29,7 @@
       */
     </script>
 
-        <meta charset="utf-8"> 
+        <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
         <link rel="shortcut icon" href="<%=settings.favicon%>">
 
@@ -121,7 +121,7 @@
             input[type="text"] {
               border-radius: 3px;
               box-sizing: border-box;
-              -moz-box-sizing: border-box;   
+              -moz-box-sizing: border-box;
               line-height:36px; /* IE8 hack */
               padding: 0px 45px 0 10px;
               *padding: 0; /* IE7 hack */
@@ -147,14 +147,14 @@
                 margin-top: 0;
               }
               #inner {
-                width: 95%;        
+                width: 95%;
               }
               #label {
                 text-align: center;
               }
             }
         </style>
-        <link href="static/custom/index.css" rel="stylesheet"> 
+        <link href="static/custom/index.css" rel="stylesheet">
 
         <div id="wrapper">
         <% e.begin_block("indexWrapper"); %>
@@ -173,7 +173,7 @@
         </div>
 
         <script src="static/custom/index.js"></script>
-        <script> 
+        <script>
         	function newCtf(){
         		var name = $("#name").val();
         		var url = $("#url").val();
@@ -186,7 +186,7 @@
         				url: url,
         				username: username,
         				password: password,
-                        pads:{}
+                        pads: {}
         			}))
         		});
         		$.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
