@@ -166,6 +166,8 @@
                 	<label>Username<input id="username" type="text" value="0daysober"></label>
                 	<label>Password<input id="password" type="text"></label>
                 </div>
+                <select id="changeCTF">
+                </select>
             </div>
         <% e.end_block(); %>
         </div>
@@ -184,7 +186,7 @@
         				url: url,
         				username: username,
         				password: password,
-                                        pads:{}
+                        pads:{}
         			}))
         		});
         		$.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
@@ -196,6 +198,27 @@
   					}
 				});
         	}
+
+        	$('#changeCTF').change(function(e){
+        		window.location='/c/'+e.target.value;
+        	});
+
+        	$.get("/api/1.2.9/listAllPads?apikey="+APIKEY, function(data) {
+        		
+        		if(data.code === 0){
+        			$('#changeCTF').html('');
+        			$('#changeCTF').append($('<option/>', { value: '', text : '---- Select a CTF ----' }));
+        			data.data.padIDs.sort().forEach(function(pad){
+        				if(pad.indexOf('---') === -1){
+        					$('#changeCTF').append($('<option/>', { value: pad, text : pad }));
+        				}
+        			});
+        		}
+        		else{
+        			alert(data.message);
+        		}
+    		});
+        	
             // start the custom js
             if (typeof customStart == "function") customStart();
         </script>

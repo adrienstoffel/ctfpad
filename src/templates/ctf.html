@@ -129,10 +129,7 @@
                     <ul class="nav navbar-nav navbar-right">
                         <li style="padding: 7px;">
                             <form>
-                                <select name="changeCTF" class="form-control">
-                                    <option>Timmy CTF 1</option>
-                                    <option>Hodor CTF 2</option>
-                                    <option>Mofo CTF 3</option>
+                                <select id="changeCTF" class="form-control">
                                 </select>
                             </form>
                         </li>
@@ -332,7 +329,7 @@
             }
 
             var params = $.param({
-                padID: taskName,
+                padID: '<%= pad %>---'+taskName,
                 text: taskName+' - '+category
             });
 
@@ -348,7 +345,7 @@
                         CTF.pads[category] = [];
                     }
                     CTF.pads[category].push({
-                        name: taskName,
+                        name: '<%= pad %>---'+taskName,
                         points: taskPoints,
                         removed: false,
                         solved: false
@@ -396,8 +393,33 @@
             solve(hash, $(e.target).is(':checked'));
         });
 
+        $('#changeCTF').change(function(e){
+            window.location='/c/'+e.target.value;
+        });
+
+          $.get("/api/1.2.9/listAllPads?apikey="+APIKEY, function(data) {
+            
+            if(data.code === 0){
+              $('#changeCTF').html('');
+              $('#changeCTF').append($('<option/>', { value: '', text : '---- Select a CTF ----' }));
+              data.data.padIDs.sort().forEach(function(pad){
+                if(pad.indexOf('---') === -1){
+                  if('<%= pad %>' === pad){
+                    $('#changeCTF').append($('<option/>', { selected: true, value: pad, text : pad }));
+                  }
+                  else{
+                    $('#changeCTF').append($('<option/>', { value: pad, text : pad }));
+                  }
+                }
+              });
+            }
+            else{
+              alert(data.message);
+            }
+        });
+
         function loadPad(){
-            $('#thePad').attr('src', '/p/'+window.location.hash.substring(1));
+            $('#thePad').attr('src', '/p/<%= pad %>---'+window.location.hash.substring(1));
         }
 
         function showUsers(span){
@@ -481,7 +503,7 @@
                                 var line = $('<li/>');
                                 getPadUsers(pad.name);
 
-                                padText = "[" + pad.points + "] " + pad.name;
+                                var padText = "[" + pad.points + "] " + pad.name.split('---')[1];
                                 if(pad.solved){
                                     line.append($('<input/>', {class: 'chkbx', type: 'checkbox', checked: 'checked'}));
                                     line.append('&nbsp;&nbsp;');
@@ -489,7 +511,7 @@
                                         class: 'solved',
                                         id: 'a_'+pad.name.checksum(),
                                         text: padText,
-                                        href: '#'+pad.name,
+                                        href: '#'+pad.name.split('---')[1],
                                         onclick: 'setTimeout(function(){ loadPad(); listPads(); }, 500)'
                                     }));
                                 }
@@ -499,7 +521,7 @@
                                     line.append($('<a/>', {
                                         id: 'a_'+pad.name.checksum(),
                                         text: padText,
-                                        href: '#'+pad.name,
+                                        href: '#'+pad.name.split('---')[1],
                                         onclick: 'setTimeout(function(){ loadPad(); listPads(); }, 500)'
                                     }));
                                 }
@@ -518,7 +540,7 @@
 function solve(padUri, d){
     for (var category in CTF.pads){
         CTF.pads[category].forEach(function(pad){
-            if(pad.name===padUri){
+            if(pad.name.split('---')[1]===padUri){
                 pad.solved = d;
             }
         });
