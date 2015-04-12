@@ -576,14 +576,14 @@
             });
         }
 
-
-function solve(padUri, d){
-    for (var category in CTF.pads){
-        CTF.pads[category].forEach(function(pad){
+      function solve(padUri, d){
+        for (var category in CTF.pads){
+          CTF.pads[category].forEach(function(pad){
             if(pad.name.split('---')[1]===padUri){
                 pad.solved = d;
             }
-
+          });
+        }
             var newParams = $.param({
                 padID: '<%= pad %>',
                 text: btoa(JSON.stringify(CTF))
