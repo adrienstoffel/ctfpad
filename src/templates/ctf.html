@@ -591,10 +591,10 @@
                                 if(!pad.removed){
                                     $('#chooseTask').append($('<option/>', {
                                         value: pad.name,
-                                        text: '[' + pad.points + '] ' + pad.name,
+                                        text: '[' + pad.points + '] ' + pad.name.split('---')[1],
                                     }));
                                     var line = $('<li/>');
-                                    getPadUsers(pad.name);
+                                    getPadUsers(pad.name.split('---')[1]);
 
                                     var padText = "[" + pad.points + "] " + pad.name.split('---')[1];
                                     var linkContent = {
