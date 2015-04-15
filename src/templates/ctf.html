@@ -66,6 +66,9 @@
             .container {
                 width: 100%;
             }
+            a{
+                cursor: pointer;
+            }
             #left{
               float:left;
               width:20%;
@@ -80,6 +83,15 @@
             #right iframe{
               height: 90vh;
               width: 100%;
+            }
+            #pads i {
+                margin-right:5px;
+            }
+            #pads li {
+                -webkit-user-select: none; /* webkit (safari, chrome) browsers */
+                -moz-user-select: none; /* mozilla browsers */
+                -khtml-user-select: none; /* webkit (konqueror) browsers */
+                -ms-user-select: none;
             }
             .solved{
               text-decoration: line-through;
@@ -119,11 +131,7 @@
                     <ul class="nav navbar-nav">
                         <li><a href="/"><i class="fa fa-home"></i> Home</a></li>
                         <li class="dropdown active">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-flag"></i> CTF <span class="caret"></span></a>
-                            <ul class="dropdown-menu" role="menu">
-                                <li><a href="#addTaskModal" data-toggle="modal" data-target="#addTaskModal"><i class="fa fa-plus"></i> Add task</a></li>
-                                <li><a href="#editTaskModal" data-toggle="modal" data-target="#editTaskModal"><i class="fa fa-edit"></i> Edit task</a></li>
-                            </ul>
+                            <a><i class="fa fa-flag"></i> CTF</a>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
@@ -159,6 +167,8 @@
                                 <input type="text" id="taskCategory" class="form-control" placeholder="enter the category name"><br />
                             </div>
                             <br />
+                            <input type="hidden" value="" id="oldTaskName" />
+                            <input type="hidden" value="" id="oldTaskCategory" />
                           </form>
                         </div>
                     </div>
@@ -167,38 +177,7 @@
                         <button id="newTask" class="btn btn-primary">
                             <i class="fa fa-plus"></i> Add task
                         </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal fade" id="editTaskModal">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h3 class="modal-title">Edit task (Not working yet)</h3>
-                    </div>
-                    <div class="modal-body">
-                        <div class="form-group">
-                          <form id="editTaskForm" role="form" data-toggle="validator">
-                            <label for="chooseTask" class="control-label">Choose a task:</label>
-                            <select id="chooseTask" class="form-control"></select>
-                            <div id="editTask" class="group-control" style="display:none">
-                                <label for="editTaskName" class="control-label">Task name:</label>
-                                <input id="editTaskName" type="text" class="form-control" placeholder="enter the task name" required>
-                                <label for="editTaskPoints" class="control-label">Task points:</label>
-                                <input id="editTaskPoints" type="text" class="form-control" placeholder="enter the task points" pattern="^([0-9]){1,10}$" maxlength="10">
-                                <label for="editCategories" class="control-label">Category:</label>
-                                <select id="editCategories" class="form-control"></select>
-                            </div>
-                            <br />
-                          </form>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button id="editTask" class="btn btn-primary">
+                        <button id="editTask" class="btn btn-primary" style="display:none">
                             <i class="fa fa-edit"></i> Edit task
                         </button>
                     </div>
@@ -211,17 +190,18 @@
           <div class="box">
             <span class="pull-right">
                 <br />
-                <a id="refreshPage" style="cursor:pointer"><i class="fa fa-refresh fa-lg"></i></a>
+                <a id="refreshPage"><i class="fa fa-refresh fa-lg"></i></a>
             </span>
             <h3><%= pad %></h3>
+            <p><a id="btnAddTask" data-toggle="modal" data-target="#addTaskModal"><i class="fa fa-plus"></i> Add task</a></p>
             <p>
                 <strong><i class="fa fa-link"></i> Link:</strong>
-                <a id="link" href="#" target="_blank"><%= pad %> site</a><br />
+                <a id="link" target="_blank"><%= pad %> site</a><br />
             </p>
 
             <p><strong><i class="fa fa-key"></i> Credentials</strong>
-            <a href="#" class="credsview"><i id="credsIconPlus" class="fa fa-plus-square-o"></i></a>
-            <a href="#" class="credsview"><i id="credsIconMinus" class="fa fa-minus-square-o"></i></a>
+            <a class="credsview"><i id="credsIconPlus" class="fa fa-plus-square-o"></i></a>
+            <a class="credsview"><i id="credsIconMinus" class="fa fa-minus-square-o"></i></a>
             </p>
             <div class="form-group" id="credentials">
                 <label for="username">Username:</label>
@@ -378,11 +358,9 @@
 
             $.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
                 if(data.code===0){
-                    $('#taskCategory').val('');
-                    $('#taskName').val('');
-                    $('#taskPonts').val('');
-                    $('#categories').val('');
-                    $('#thePad').attr('src', '/p/'+encodeURIComponent('<%= pad %>---'+taskName));
+                    window.location.hash = taskName;
+                    loadPad();
+                    //$('#thePad').attr('src', '/p/'+encodeURIComponent('<%= pad %>---'+taskName));
 
                     if(typeof CTF.pads[taskCategory] === 'undefined'){
                         CTF.pads[taskCategory] = [];
@@ -402,6 +380,7 @@
                     $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function( data ) {
                         if(data.code===0){
                             listPads();
+                            $('#addTaskModal').modal('hide');
                         }
                         else{
                             alert(data.message);
@@ -415,6 +394,99 @@
             });
         });
 
+        $('#editTask').click(function(e){
+            if($('#categories').val() === 'new'){
+                var taskCategory = $('#taskCategory').val();
+            } else{
+                var taskCategory = $('#categories').val();
+            }
+            var taskName   = $('#taskName').val();
+            var taskPoints = $('#taskPoints').val();
+            var oldTaskName   = $('#oldTaskName').val();
+            var oldTaskCategory   = $('#oldTaskCategory').val();
+
+            if (taskCategory === '') {
+                alert("Please choose a category");
+                return;
+            }
+
+            if (taskName === '') {
+                alert("Please enter a task name");
+                return;
+            }
+
+            if (isNaN(parseInt(taskPoints, 10)) || taskPoints != parseInt(taskPoints, 10)) {
+                alert("Please enter a valid amount of points");
+                return;
+            }
+
+            if(oldTaskCategory !== taskCategory){
+                var index;
+                CTF.pads[oldTaskCategory].forEach(function(task, i){
+                    if(task.name.split('---')[1]===oldTaskName){
+                        index = i;
+                    }
+                });
+                        
+                if(typeof CTF.pads[taskCategory] === 'undefined'){
+                    CTF.pads[taskCategory] = [];
+                }
+                CTF.pads[taskCategory].push({
+                    name: '<%= pad %>---'+taskName,
+                    points: taskPoints,
+                    removed: CTF.pads[oldTaskCategory][index].removed,
+                    solved: CTF.pads[oldTaskCategory][index].solved,
+                });
+                
+                CTF.pads[oldTaskCategory].splice(index, 1);
+            }
+            else{
+                console.log(oldTaskName);
+                CTF.pads[taskCategory].forEach(function(task){
+                    if(task.name.split('---')[1]===oldTaskName){
+                        task.name = '<%= pad %>---'+taskName;
+                        task.points = taskPoints;
+                    }
+                });
+            }
+
+            var newParams = $.param({
+                padID: '<%= pad %>',
+                text: JSON.stringify(CTF)
+            });
+
+            $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function( data ) {
+                if(data.code===0){
+                    listPads();
+                }
+                else{
+                    alert(data.message);
+                }
+            });
+
+            if(oldTaskName !== taskName){
+                var params = $.param({
+                    sourceID: '<%= pad %>---'+oldTaskName,
+                    destinationID: '<%= pad %>---'+taskName                    
+                });
+
+                $.get("/api/1.2.9/movePad?apikey="+APIKEY+"&"+params, function( data ) {
+                    if(data.code===0){
+                        window.location.hash = taskName;
+                        loadPad();
+                        $('#addTaskModal').modal('hide');
+                    }
+                    else{
+                        alert(data.message);
+                    }
+                });
+            }
+            else{
+                $('#addTaskModal').modal('hide');
+            }
+
+        });
+
         $('#categories').change(function(e){
             if(e.target.value === 'new'){
                 $('#newCategory').css('display', 'inline');
@@ -425,41 +497,12 @@
             }
         });
 
-        $('#chooseTask').change(function(e){
-            if (e.target.value == '') {
-                $('#editTask').css('display', 'none');
-            } else {
-                $('#editTask').css('display', 'inline');
-                $('#editTaskName').val($('#chooseTask').val());
-
-                $('#editCategories').html('');
-                $('#editCategories').append($('<option/>', {
-                    value: '', 
-                    text : '---- Select a category ----' }
-                ));
-
-                for (var category in CTF.pads) {
-                    var categoryContent = {
-                        value: category, 
-                        text : category
-                    };
-
-                    CTF.pads[category].sort().forEach(function(task) {
-                        if (task.name === $('#chooseTask').val()) {
-                            categoryContent['selected'] = 'selected';
-                            $('#editTaskPoints').val(task.points);
-                        }
-                    });
-
-                    $('#editCategories').append($('<option/>', categoryContent));
-                };
-            }
-        });
-
-        $('#pads').on('click', '.chkbx', function(e){
-            var hash = $(e.target).parent().children('a').attr('href').substring(1);
-            solve(hash, $(e.target).is(':checked'));
-        });
+        function check(i){
+            var hash = $(i).parent().parent().children('.padLink').attr('href').substring(1);
+            var category = $(i).parent().parent().parent().prev().text();
+            console.log(category);
+            solve(hash, category, $(i).attr('class')==='fa fa-square-o');
+        }
 
         $('#changeCTF').change(function(e){
             window.location='/c/'+e.target.value;
@@ -469,37 +512,64 @@
             $('#thePad').attr('src', '/p/'+encodeURIComponent('<%= pad %>---'+window.location.hash.substring(1)));
         }
 
-        function showUsers(span){
-            var padUsers = JSON.parse($(span).attr('data-padusers'));
-            var users = [];
-            padUsers.sort().forEach(function(user){
-                users.push(user.name);
-            });
-            $(span.children[0]).tooltip();
+        function editTask(li){
+            var taskCategory = $(li).parent().prev().text();
+            var task = $(li).children('.padLink').text().split(']');
+            var taskPoints = parseInt(task[0].substring(1),10);
+            var taskName = task[1].substring(1);
+            $('#taskName').val(taskName);
+            $('#oldTaskName').val(taskName);
+            $('#oldTaskCategory').val(taskCategory);
+            $('#taskPoints').val(taskPoints);
+            $('#categories').val(taskCategory);
+            $('#newCategory').val('');
+            $('#newCategory').css('display', 'none');
+            
+            $('.modal-title').text('Edit task');
+            $('#editTask').css('display','inline');
+            $('#newTask').css('display','none');
+            $('#addTaskModal').modal('show');
         }
 
+        $('#btnAddTask').click(function(){
+            $('#taskCategory').val('');
+            $('#taskName').val('');
+            $('#oldTaskName').val('');
+            $('#oldTaskCategory').val('');
+            $('#taskPoints').val('');
+            $('#categories').val('');
+            $('#newCategory').val('');
+            $('#newCategory').css('display', 'none');
+            $('.modal-title').text('Add task');
+            $('#editTask').css('display','none');
+            $('#newTask').css('display','inline');
+        });
+
         function deletePad(btn){
-            var padUri = $(btn).parent().children('a').attr('href').substring(1);
-            for (var category in CTF.pads){
+            if(confirm("Are you sure ?")){
+                var category = $(btn).parent().parent().parent().parent().children().first().text();
+                var padUri = $(btn).parent().parent().children('.padLink').attr('href').substring(1);
+
                 CTF.pads[category].forEach(function(pad){
                     if(pad.name.split('---')[1]===padUri){
                         pad.removed = true;
                     }
                 });
-            }
-            var newParams = $.param({
-                padID: '<%= pad %>',
-                text: JSON.stringify(CTF)
-            });
+                
+                var newParams = $.param({
+                    padID: '<%= pad %>',
+                    text: JSON.stringify(CTF)
+                });
 
-            $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function(data) {
-                if(data.code===0){
-                    listPads();
-                }
-                else{
-                    alert(data.message);
-                }
-            });
+                $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function(data) {
+                    if(data.code===0){
+                        listPads();
+                    }
+                    else{
+                        alert(data.message);
+                    }
+                });
+            }
         }
 
         function listPads(){
@@ -517,7 +587,6 @@
                     $('#username').val(CTF.username);
                     $('#password').val(CTF.password);
                     $('#categories').html('');
-                    $('#chooseTask').html('');
 
                     var pads = CTF.pads;
 
@@ -531,8 +600,8 @@
                         categories.push(key);
                     }
 
-                    categories.forEach(function(category) {
-                        pads[category].forEach(function(pad) {
+                    categories.sort().forEach(function(category) {
+                        pads[category].sort().forEach(function(pad) {
                             if (!pad.removed){
                                 if (pad.solved) {
                                     solved++;
@@ -549,11 +618,15 @@
 
                     $('#solveProgression').attr('aria-valuenow', solveProgress);
                     $('#solveProgression').attr('style', "width: " + solveProgress + "%; min-width: 2em;");
-                    $('#solveProgression').html('<span>' + solved + ' / ' + tasks + ' solved (' + solveProgress + '%)</span>');
+                    $('#solveProgression').html($('<span/>',{
+                        text: solved + ' / ' + tasks + ' solved (' + solveProgress + '%)'
+                    }));
 
                     $('#pointsProgression').attr('aria-valuenow', pointsProgress);
                     $('#pointsProgression').attr('style', "width: " + pointsProgress + "%; min-width: 2em;");
-                    $('#pointsProgression').html('<span>' + score + ' / ' + maxScore + ' pts (' + pointsProgress + '%)</span>');
+                    $('#pointsProgression').html($('<span/>', {
+                        text: score + ' / ' + maxScore + ' pts (' + pointsProgress + '%)'
+                    }));
 
 
                     if (!jQuery.isEmptyObject(CTF.pads)) {
@@ -572,11 +645,6 @@
                         text : 'New category' 
                     }));
 
-                    $('#chooseTask').append($('<option/>', {
-                        value: '',
-                        text: '---- Select a task ----'
-                    }));
-
                     categories.sort().forEach(function(category) {
                         $('#categories').append($('<option/>', { 
                             value: category, 
@@ -589,44 +657,64 @@
                             .sort(function(a, b) { return (a.points > b.points); })
                             .forEach(function(pad){
                                 if(!pad.removed){
-                                    $('#chooseTask').append($('<option/>', {
-                                        value: pad.name,
-                                        text: '[' + pad.points + '] ' + pad.name.split('---')[1],
-                                    }));
-                                    var line = $('<li/>');
+                                    var line = $('<li/>', {
+                                        ondblclick: 'editTask(this);'
+                                    });
                                     getPadUsers(pad.name);
 
                                     var padText = "[" + pad.points + "] " + pad.name.split('---')[1];
                                     var linkContent = {
                                         id: 'a_'+pad.name.checksum(),
+                                        class: 'padLink',
                                         text: padText,
                                         href: '#'+pad.name.split('---')[1],
                                         onclick: 'setTimeout(function(){ loadPad(); listPads(); }, 500)'
                                     };
                                     var chkbxContent = {
-                                        class: 'chkbx', 
-                                        type: 'checkbox'
+                                        class: 'fa fa-square-o',
+                                        onclick: 'check(this);'
                                     };
 
                                     var btnContent = {
-                                        text: 'Delete',
+                                        class: 'fa fa-trash',
                                         onclick: 'deletePad(this);'
                                     }
 
-                                    if(pad.solved){
-                                        chkbxContent['checked'] = 'checked';
-                                        linkContent['class'] = 'solved';
+                                    var btnEditContent = {
+                                        class: 'fa fa-pencil-square-o',
+                                        onclick: 'editTask(this);'
                                     }
-                                    line.append($('<button/>', btnContent));
-                                    line.append($('<input/>', chkbxContent));
-                                    line.append('&nbsp;&nbsp;');
+
+                                    if(pad.solved){
+                                        chkbxContent['class'] = 'fa fa-check-square-o';
+                                        linkContent['class'] = 'padLink solved';
+                                    }
+                                    line.append($('<a/>').append($('<i/>', btnContent)));
+                                    line.append($('<a/>').append($('<i/>', btnEditContent)));
+                                    line.append($('<a/>').append($('<i/>', chkbxContent)));
                                     line.append($('<a/>', linkContent));
-                                    line.append($('<span/>', {
-                                        id: 'span_'+pad.name.checksum(), 
-                                        text: 0, 
-                                        onmouseover: 'showUsers(this);', 
+                                    var tooltip = $('<span/>', {
+                                        id: 'span_'+pad.name.checksum(),
                                         class: 'pull-right'
-                                    }));
+                                    });
+                                    var tooltipSpan = $('<span/>', {
+                                        'data-toggle': 'tooltip',
+                                        'data-placement': 'right',
+                                        title: '',
+                                        class: 'text-muted'
+                                    });
+                                    var tooltipA = $('<a/>', {
+                                        class: 'text-muted'
+                                    });
+                                    var tooltipI = $('<i/>', {                                        
+                                        class: 'fa fa-user-times',
+                                        text: 0
+                                    });
+                                    tooltipA.append(tooltipI);
+                                    tooltipSpan.append(tooltipA);
+                                    tooltip.append(tooltipSpan);
+
+                                    line.append(tooltip);
                                     ul.append(line);
                                 }
                             });
@@ -639,14 +727,13 @@
             });
         }
 
-        function solve(padUri, d){
-            for (var category in CTF.pads){
-                CTF.pads[category].forEach(function(pad){
-                    if(pad.name.split('---')[1]===padUri){
-                        pad.solved = d;
-                    }
-                });
-            }
+        function solve(padUri, category, d){
+            CTF.pads[category].forEach(function(pad){
+                if(pad.name.split('---')[1]===padUri){
+                    pad.solved = d;
+                }
+            });
+
             var newParams = $.param({
                 padID: '<%= pad %>',
                 text: JSON.stringify(CTF)
@@ -665,7 +752,7 @@
         function getPadUsers(padUri){
             $.get("/api/1.2.9/padUsers?apikey="+APIKEY+"&padID="+padUri, function( data ) {
                 if(data.code===0){
-                    if (data.data.padUsers.length == 0) {
+                    if (data.data.padUsers.length === 0) {
                         var icon = "fa fa-user-times";
                         var color = "text-muted";
                     } else if (data.data.padUsers.length == 1) {
@@ -681,24 +768,20 @@
                         users.push(user.name);
                     });
 
-                    tooltip = $('<div/>').text(users.sort().join(' ')).html();
+                    var span = $('#span_'+padUri.checksum()).children().first();
+                    var i = span.find('i');
+                    span.attr('title', users.sort().join(' ')).attr('class', color);
+                    span.find('a').attr('class', color);
+                    i.text(users.length);
+                    i.attr('class', icon);
 
-                    $('#span_'+padUri.checksum()).html(
-                            '<span data-toggle="tooltip" data-placement="right" title="' + tooltip + '" class="' + color + '">' +
-                            data.data.padUsers.length +
-                            ' <a href="#" class="' + color +'">' +
-                            '<i class="fa ' + icon + '"></i>' +
-                            '</span>');
-                    $('#span_'+padUri.checksum()).attr('data-padUsers', JSON.stringify(data.data.padUsers));
+                    span.tooltip();
                 }
                 else{
                     alert('getPadUsers '+padUri+' : '+data.message);
                 }
             });
 
-            $(function () {
-                $('[data-toggle="tooltip"]').tooltip()
-            });
         }
         </script>
 </html>
