@@ -84,8 +84,17 @@
               height: 90vh;
               width: 100%;
             }
-            #pads i {
+            .fa-square-o, .fa-check-square-o {
                 margin-right:5px;
+            }
+            .fa-usera-times:after {
+                content: "\f235";
+            }
+            .fa-usersa:after {
+                content: "\f0c0";
+            }
+            .fa-usera:after {
+                content: "\f007";
             }
             #pads li {
                 -webkit-user-select: none; /* webkit (safari, chrome) browsers */
@@ -513,8 +522,8 @@
         }
 
         function editTask(li){
-            var taskCategory = $(li).parent().prev().text();
-            var task = $(li).children('.padLink').text().split(']');
+            var taskCategory = $(li).parent().parent().parent().prev().text();
+            var task = $(li).parent().parent().children('.padLink').text().split(']');
             var taskPoints = parseInt(task[0].substring(1),10);
             var taskName = task[1].substring(1);
             $('#taskName').val(taskName);
@@ -657,9 +666,7 @@
                             .sort(function(a, b) { return (a.points > b.points); })
                             .forEach(function(pad){
                                 if(!pad.removed){
-                                    var line = $('<li/>', {
-                                        ondblclick: 'editTask(this);'
-                                    });
+                                    var line = $('<li/>');
                                     getPadUsers(pad.name);
 
                                     var padText = "[" + pad.points + "] " + pad.name.split('---')[1];
@@ -675,22 +682,10 @@
                                         onclick: 'check(this);'
                                     };
 
-                                    var btnContent = {
-                                        class: 'fa fa-trash',
-                                        onclick: 'deletePad(this);'
-                                    }
-
-                                    var btnEditContent = {
-                                        class: 'fa fa-pencil-square-o',
-                                        onclick: 'editTask(this);'
-                                    }
-
                                     if(pad.solved){
                                         chkbxContent['class'] = 'fa fa-check-square-o';
                                         linkContent['class'] = 'padLink solved';
                                     }
-                                    line.append($('<a/>').append($('<i/>', btnContent)));
-                                    line.append($('<a/>').append($('<i/>', btnEditContent)));
                                     line.append($('<a/>').append($('<i/>', chkbxContent)));
                                     line.append($('<a/>', linkContent));
                                     var tooltip = $('<span/>', {
@@ -707,13 +702,25 @@
                                         class: 'text-muted'
                                     });
                                     var tooltipI = $('<i/>', {                                        
-                                        class: 'fa fa-user-times',
+                                        class: 'fa fa-usera-times',
                                         text: 0
                                     });
                                     tooltipA.append(tooltipI);
                                     tooltipSpan.append(tooltipA);
                                     tooltip.append(tooltipSpan);
 
+                                    var btnDelContent = {
+                                        class: 'fa fa-trash pull-right',
+                                        onclick: 'deletePad(this);'
+                                    }
+
+                                    var btnEditContent = {
+                                        class: 'fa fa-pencil-square-o pull-right',
+                                        onclick: 'editTask(this);'
+                                    }
+
+                                    line.append($('<a/>').append($('<i/>', btnDelContent)));
+                                    line.append($('<a/>').append($('<i/>', btnEditContent)));
                                     line.append(tooltip);
                                     ul.append(line);
                                 }
@@ -753,13 +760,13 @@
             $.get("/api/1.2.9/padUsers?apikey="+APIKEY+"&padID="+padUri, function( data ) {
                 if(data.code===0){
                     if (data.data.padUsers.length === 0) {
-                        var icon = "fa fa-user-times";
+                        var icon = "fa fa-usera-times";
                         var color = "text-muted";
                     } else if (data.data.padUsers.length == 1) {
-                        var icon = "fa fa-user";
+                        var icon = "fa fa-usera";
                         var color = "text-success";
                     } else {
-                        var icon = "fa fa-users";
+                        var icon = "fa fa-usersa";
                         var color = "text-success";
                     }
 
