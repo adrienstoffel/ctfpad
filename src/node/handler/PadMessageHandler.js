@@ -1015,6 +1015,11 @@ function handleClientReady(client, message)
         if(statusObject.accessStatus == "grant")
         {
           author = statusObject.authorID;
+          if (client.handshake.headers.authorization && client.handshake.headers.authorization.search('Basic ') === 0) {
+            var userpass = new Buffer(client.handshake.headers.authorization.split(' ')[1], 'base64').toString().split(":")
+            var username = userpass.shift();
+            authorManager.setAuthorName(author, username);
+          }
           callback();
         }
         //no access, send the client a message that tell him why
