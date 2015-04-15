@@ -181,13 +181,13 @@
         		var password = $("#password").val();
         		var params = $.param({
         			padID: name,
-        			text: btoa(JSON.stringify({
+        			text: JSON.stringify({
         				name: name,
         				url: url,
         				username: username,
         				password: password,
                         pads: {}
-        			}))
+        			})
         		});
         		$.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
   					if(data.code===0){

@@ -300,20 +300,63 @@
 
         CTF = {};
 
+        listPads();
+
+        if(document.location.hash.length > 1){
+            loadPad();
+        }
+
+        $.get("/api/1.2.9/listAllPads?apikey="+APIKEY, function(data) {
+            
+            if(data.code === 0){
+                $('#changeCTF').html('');
+                $('#changeCTF').append($('<option/>', {
+                    value: '', 
+                    text : '---- Select a CTF ----' 
+                }));
+                
+                data.data.padIDs.sort().forEach(function(pad){
+                    if(pad.indexOf('---') === -1){
+                        var changeContent = { 
+                            value: pad, 
+                            text : pad
+                        };
+                        if('<%= pad %>' === pad){
+                            changeContent['selected'] = 'selected';
+                        }
+                        $('#changeCTF').append($('<option/>', changeContent));
+                    }
+                });
+            }
+            else{
+              alert(data.message);
+            }
+        });
+
+        setInterval("listPads()", 1000*60);
+        $("#credentials").hide();
+        $("#credsIconMinus").hide();
+
+        $(".credsview").click(function(){
+            $("#credentials").toggle("slow");
+            $("#credsIconPlus").toggle("slow");
+            $("#credsIconMinus").toggle("slow");
+        });
+
         $('#refreshPage').click(function() {
             listPads();
         });
 
         $('#newTask').click(function(e){
             if($('#categories').val() === 'new'){
-                var category = $('#taskCategory').val();
+                var taskCategory = $('#taskCategory').val();
             } else{
-                var category = $('#categories').val();
+                var taskCategory = $('#categories').val();
             }
-            var taskName = $('#taskName').val();
+            var taskName   = $('#taskName').val();
             var taskPoints = $('#taskPoints').val();
 
-            if (category === '') {
+            if (taskCategory === '') {
                 alert("Please choose a category");
                 return;
             }
@@ -330,7 +373,7 @@
 
             var params = $.param({
                 padID: '<%= pad %>---'+taskName,
-                text: taskName+' - '+category
+                text: taskName+' - '+taskCategory
             });
 
             $.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
@@ -339,12 +382,12 @@
                     $('#taskName').val('');
                     $('#taskPonts').val('');
                     $('#categories').val('');
-                    $('#thePad').attr('src', '/p/'+taskName);
+                    $('#thePad').attr('src', '/p/'+encodeURIComponent('<%= pad %>---'+taskName));
 
-                    if(typeof CTF.pads[category] === 'undefined'){
-                        CTF.pads[category] = [];
+                    if(typeof CTF.pads[taskCategory] === 'undefined'){
+                        CTF.pads[taskCategory] = [];
                     }
-                    CTF.pads[category].push({
+                    CTF.pads[taskCategory].push({
                         name: '<%= pad %>---'+taskName,
                         points: taskPoints,
                         removed: false,
@@ -353,7 +396,7 @@
 
                     var newParams = $.param({
                         padID: '<%= pad %>',
-                        text: btoa(JSON.stringify(CTF))
+                        text: JSON.stringify(CTF)
                     });
 
                     $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function( data ) {
@@ -390,33 +433,28 @@
                 $('#editTaskName').val($('#chooseTask').val());
 
                 $('#editCategories').html('');
-                $('#editCategories').append($('<option/>', { value: '', text : '---- Select a category ----' }));
+                $('#editCategories').append($('<option/>', {
+                    value: '', 
+                    text : '---- Select a category ----' }
+                ));
 
                 for (var category in CTF.pads) {
-                    selected = false;
-                    CTF.pads[category].forEach(function(task) {
-                        if (task.name == $('#chooseTask').val()) {
-                            selected = true;
+                    var categoryContent = {
+                        value: category, 
+                        text : category
+                    };
+
+                    CTF.pads[category].sort().forEach(function(task) {
+                        if (task.name === $('#chooseTask').val()) {
+                            categoryContent['selected'] = 'selected';
                             $('#editTaskPoints').val(task.points);
                         }
                     });
 
-                    if (selected) {
-                        $('#editCategories').append($('<option/>',
-                                    { value: category, text : category, selected : 'selected'}));
-                    } else {
-                        $('#editCategories').append($('<option/>',
-                                    { value: category, text : category}));
-                    }
+                    $('#editCategories').append($('<option/>', categoryContent));
                 };
             }
         });
-
-        listPads();
-
-        if(document.location.hash.length > 1){
-            loadPad();
-        }
 
         $('#pads').on('click', '.chkbx', function(e){
             var hash = $(e.target).parent().children('a').attr('href').substring(1);
@@ -427,39 +465,41 @@
             window.location='/c/'+e.target.value;
         });
 
-          $.get("/api/1.2.9/listAllPads?apikey="+APIKEY, function(data) {
-            
-            if(data.code === 0){
-              $('#changeCTF').html('');
-              $('#changeCTF').append($('<option/>', { value: '', text : '---- Select a CTF ----' }));
-              data.data.padIDs.sort().forEach(function(pad){
-                if(pad.indexOf('---') === -1){
-                  if('<%= pad %>' === pad){
-                    $('#changeCTF').append($('<option/>', { selected: true, value: pad, text : pad }));
-                  }
-                  else{
-                    $('#changeCTF').append($('<option/>', { value: pad, text : pad }));
-                  }
-                }
-              });
-            }
-            else{
-              alert(data.message);
-            }
-        });
-
         function loadPad(){
-            $('#thePad').attr('src', '/p/<%= pad %>---'+window.location.hash.substring(1));
+            $('#thePad').attr('src', '/p/'+encodeURIComponent('<%= pad %>---'+window.location.hash.substring(1)));
         }
 
         function showUsers(span){
             var padUsers = JSON.parse($(span).attr('data-padusers'));
             var users = [];
-            padUsers.forEach(function(user){
+            padUsers.sort().forEach(function(user){
                 users.push(user.name);
             });
             $(span.children[0]).tooltip();
-            // console.log(users);
+        }
+
+        function deletePad(btn){
+            var padUri = $(btn).parent().children('a').attr('href').substring(1);
+            for (var category in CTF.pads){
+                CTF.pads[category].forEach(function(pad){
+                    if(pad.name.split('---')[1]===padUri){
+                        pad.removed = true;
+                    }
+                });
+            }
+            var newParams = $.param({
+                padID: '<%= pad %>',
+                text: JSON.stringify(CTF)
+            });
+
+            $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function(data) {
+                if(data.code===0){
+                    listPads();
+                }
+                else{
+                    alert(data.message);
+                }
+            });
         }
 
         function listPads(){
@@ -469,7 +509,7 @@
 
             $.get("/api/1.2.9/getText?apikey="+APIKEY+"&"+params, function( data ) {
                 if(data.code===0){
-                    CTF = JSON.parse(atob(data.data.text));
+                    CTF = JSON.parse(data.data.text);
 
                     $('#link').attr('href', CTF.url);
                     $('#copyu').attr('data-clipboard-text', CTF.username);
@@ -493,17 +533,19 @@
 
                     categories.forEach(function(category) {
                         pads[category].forEach(function(pad) {
-                            if (pad.solved) {
-                                solved++;
-                                score += parseInt(pad.points, 10);
+                            if (!pad.removed){
+                                if (pad.solved) {
+                                    solved++;
+                                    score += parseInt(pad.points, 10);
+                                }
+                                tasks++;
+                                maxScore += parseInt(pad.points, 10);
                             }
-                            tasks++;
-                            maxScore += parseInt(pad.points, 10);
                         });
                     });
 
-                    solveProgress = solved ? Math.round((solved / tasks) * 100) : 0;
-                    pointsProgress = score ? Math.round((score / maxScore) * 100) : 0;
+                    var solveProgress  = solved ? Math.round((solved / tasks) * 100) : 0;
+                    var pointsProgress = score ? Math.round((score / maxScore) * 100) : 0;
 
                     $('#solveProgression').attr('aria-valuenow', solveProgress);
                     $('#solveProgression').attr('style', "width: " + solveProgress + "%; min-width: 2em;");
@@ -520,52 +562,73 @@
                         $('#pads').html('<h4>No tasks yet...</h4>');
                     }
 
-                    $('#categories').append($('<option/>', { value: '', text : '---- Select a category ----' }));
-                    $('#categories').append($('<option/>', { value: 'new', text : 'New category' }));
+                    $('#categories').append($('<option/>', { 
+                        value: '', 
+                        text : '---- Select a category ----' 
+                    }));
+
+                    $('#categories').append($('<option/>', { 
+                        value: 'new', 
+                        text : 'New category' 
+                    }));
+
                     $('#chooseTask').append($('<option/>', {
                         value: '',
                         text: '---- Select a task ----'
                     }));
 
                     categories.sort().forEach(function(category) {
-                        $('#categories').append($('<option/>', { value: category, text : category }));
+                        $('#categories').append($('<option/>', { 
+                            value: category, 
+                            text : category 
+                        }));
                         $('#pads').append($('<h4/>', {text: category}));
                         var ul = $('<ul/>', {class: 'list-unstyled'});
 
                         pads[category]
                             .sort(function(a, b) { return (a.points > b.points); })
                             .forEach(function(pad){
-                                $('#chooseTask').append($('<option/>', {
-                                    value: pad.name,
-                                    text: '[' + pad.points + '] ' + pad.name,
-                                }));
-                                var line = $('<li/>');
-                                getPadUsers(pad.name);
+                                if(!pad.removed){
+                                    $('#chooseTask').append($('<option/>', {
+                                        value: pad.name,
+                                        text: '[' + pad.points + '] ' + pad.name,
+                                    }));
+                                    var line = $('<li/>');
+                                    getPadUsers(pad.name);
 
-                                var padText = "[" + pad.points + "] " + pad.name.split('---')[1];
-                                if(pad.solved){
-                                    line.append($('<input/>', {class: 'chkbx', type: 'checkbox', checked: 'checked'}));
-                                    line.append('&nbsp;&nbsp;');
-                                    line.append($('<a/>', {
-                                        class: 'solved',
+                                    var padText = "[" + pad.points + "] " + pad.name.split('---')[1];
+                                    var linkContent = {
                                         id: 'a_'+pad.name.checksum(),
                                         text: padText,
                                         href: '#'+pad.name.split('---')[1],
                                         onclick: 'setTimeout(function(){ loadPad(); listPads(); }, 500)'
-                                    }));
-                                }
-                                else{
-                                    line.append($('<input/>', {class: 'chkbx', type: 'checkbox'}));
+                                    };
+                                    var chkbxContent = {
+                                        class: 'chkbx', 
+                                        type: 'checkbox'
+                                    };
+
+                                    var btnContent = {
+                                        text: 'Delete',
+                                        onclick: 'deletePad(this);'
+                                    }
+
+                                    if(pad.solved){
+                                        chkbxContent['checked'] = 'checked';
+                                        linkContent['class'] = 'solved';
+                                    }
+                                    line.append($('<button/>', btnContent));
+                                    line.append($('<input/>', chkbxContent));
                                     line.append('&nbsp;&nbsp;');
-                                    line.append($('<a/>', {
-                                        id: 'a_'+pad.name.checksum(),
-                                        text: padText,
-                                        href: '#'+pad.name.split('---')[1],
-                                        onclick: 'setTimeout(function(){ loadPad(); listPads(); }, 500)'
+                                    line.append($('<a/>', linkContent));
+                                    line.append($('<span/>', {
+                                        id: 'span_'+pad.name.checksum(), 
+                                        text: 0, 
+                                        onmouseover: 'showUsers(this);', 
+                                        class: 'pull-right'
                                     }));
+                                    ul.append(line);
                                 }
-                                line.append($('<span/>', {id: 'span_'+pad.name.checksum(), text: 0, onmouseover: 'showUsers(this);', class: 'pull-right'}));
-                                ul.append(line);
                             });
                         $('#pads').append(ul);
                     });
@@ -576,17 +639,17 @@
             });
         }
 
-      function solve(padUri, d){
-        for (var category in CTF.pads){
-          CTF.pads[category].forEach(function(pad){
-            if(pad.name.split('---')[1]===padUri){
-                pad.solved = d;
+        function solve(padUri, d){
+            for (var category in CTF.pads){
+                CTF.pads[category].forEach(function(pad){
+                    if(pad.name.split('---')[1]===padUri){
+                        pad.solved = d;
+                    }
+                });
             }
-          });
-        }
             var newParams = $.param({
                 padID: '<%= pad %>',
-                text: btoa(JSON.stringify(CTF))
+                text: JSON.stringify(CTF)
             });
 
             $.get("/api/1.2.9/setText?apikey="+APIKEY+"&"+newParams, function(data) {
@@ -603,14 +666,14 @@
             $.get("/api/1.2.9/padUsers?apikey="+APIKEY+"&padID="+padUri, function( data ) {
                 if(data.code===0){
                     if (data.data.padUsers.length == 0) {
-                        icon = "fa fa-user-times";
-                        color = "text-muted";
+                        var icon = "fa fa-user-times";
+                        var color = "text-muted";
                     } else if (data.data.padUsers.length == 1) {
-                        icon = "fa fa-user";
-                        color = "text-success";
+                        var icon = "fa fa-user";
+                        var color = "text-success";
                     } else {
-                        icon = "fa fa-users";
-                        color = "text-success";
+                        var icon = "fa fa-users";
+                        var color = "text-success";
                     }
 
                     var users = [];
@@ -618,7 +681,7 @@
                         users.push(user.name);
                     });
 
-                    tooltip = $('<div/>').text(users.join(' ')).html();
+                    tooltip = $('<div/>').text(users.sort().join(' ')).html();
 
                     $('#span_'+padUri.checksum()).html(
                             '<span data-toggle="tooltip" data-placement="right" title="' + tooltip + '" class="' + color + '">' +
@@ -637,17 +700,5 @@
                 $('[data-toggle="tooltip"]').tooltip()
             });
         }
-
-        setInterval("listPads()", 1000*60);
-        </script>
-        <script>
-            $("#credentials").hide();
-            $("#credsIconMinus").hide();
-
-            $(".credsview").click(function(){
-                $("#credentials").toggle("slow");
-                $("#credsIconPlus").toggle("slow");
-                $("#credsIconMinus").toggle("slow");
-            });
         </script>
 </html>
