@@ -657,13 +657,17 @@
                             value: category, 
                             text : category 
                         }));
-                        $('#pads').append($('<h4/>', {text: category}));
+                        var a = 0;
                         var ul = $('<ul/>', {class: 'list-unstyled'});
 
                         pads[category]
                             .sort(function(a, b) { return (a.points > b.points); })
                             .forEach(function(pad){
                                 if(!pad.removed){
+                                    if(a===0){
+                                        $('#pads').append($('<h4/>', {text: category}));
+                                        a = 1;
+                                    }
                                     var line = $('<li/>');
                                     getPadUsers(pad.name);
 
