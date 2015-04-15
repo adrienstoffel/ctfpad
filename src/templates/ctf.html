@@ -450,7 +450,6 @@
                 CTF.pads[oldTaskCategory].splice(index, 1);
             }
             else{
-                console.log(oldTaskName);
                 CTF.pads[taskCategory].forEach(function(task){
                     if(task.name.split('---')[1]===oldTaskName){
                         task.name = '<%= pad %>---'+taskName;
@@ -507,9 +506,8 @@
         });
 
         function check(i){
-            var hash = $(i).parent().parent().children('.padLink').attr('href').substring(1);
-            var category = $(i).parent().parent().parent().prev().text();
-            console.log(category);
+            var hash = $(i).parent().children('.padLink').attr('href').substring(1);
+            var category = $(i).parent().parent().prev().text();
             solve(hash, category, $(i).attr('class')==='fa fa-square-o');
         }
 
@@ -686,7 +684,7 @@
                                         chkbxContent['class'] = 'fa fa-check-square-o';
                                         linkContent['class'] = 'padLink solved';
                                     }
-                                    line.append($('<a/>').append($('<i/>', chkbxContent)));
+                                    line.append($('<i/>', chkbxContent));
                                     line.append($('<a/>', linkContent));
                                     var tooltip = $('<span/>', {
                                         id: 'span_'+pad.name.checksum(),
