@@ -211,7 +211,7 @@
           <div class="box">
             <span class="pull-right">
                 <br />
-                <a id="refreshPage" href="#"><i class="fa fa-refresh fa-lg"></i></a>
+                <a id="refreshPage" style="cursor:pointer"><i class="fa fa-refresh fa-lg"></i></a>
             </span>
             <h3><%= pad %></h3>
             <p>
@@ -594,7 +594,7 @@
                                         text: '[' + pad.points + '] ' + pad.name.split('---')[1],
                                     }));
                                     var line = $('<li/>');
-                                    getPadUsers(pad.name.split('---')[1]);
+                                    getPadUsers(pad.name);
 
                                     var padText = "[" + pad.points + "] " + pad.name.split('---')[1];
                                     var linkContent = {
