@@ -554,9 +554,9 @@
 
         function deletePad(btn){
             if(confirm("Are you sure ?")){
-                var category = $(btn).parent().parent().parent().parent().children().first().text();
+                var category = $(btn).parent().parent().parent().prev().text();
                 var padUri = $(btn).parent().parent().children('.padLink').attr('href').substring(1);
-
+                console.log(category);
                 CTF.pads[category].forEach(function(pad){
                     if(pad.name.split('---')[1]===padUri){
                         pad.removed = true;
