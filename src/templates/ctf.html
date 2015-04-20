@@ -661,7 +661,7 @@
                         var ul = $('<ul/>', {class: 'list-unstyled'});
 
                         pads[category]
-                            .sort(function(a, b) { return (a.points > b.points); })
+                            .sort(function(a, b) { return (parseInt(a.points) > parseInt(b.points)); })
                             .forEach(function(pad){
                                 if(!pad.removed){
                                     if(a===0){
