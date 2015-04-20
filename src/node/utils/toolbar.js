@@ -187,6 +187,12 @@ module.exports = {
       class: "buttonicon buttonicon-clearauthorship"
     },
 
+    addnewpad: {
+        command: "addnewpad",
+        localizationId: "pad.toolbar.addNewPad.title",
+        class: "buttonicon buttonicon-upload-file"
+    },
+
     importexport: {
       command: "import_export",
       localizationId: "pad.toolbar.import_export.title",

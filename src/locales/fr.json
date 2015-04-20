@@ -23,6 +23,7 @@
 	},
 	"index.newPad": "Nouveau pad",
 	"index.createOpenPad": "ou créer/ouvrir un pad intitulé :",
+        "pad.toolbar.addNewPad.title": "Créer un pad",
 	"pad.toolbar.bold.title": "Gras (Ctrl-B)",
 	"pad.toolbar.italic.title": "Italique (Ctrl-I)",
 	"pad.toolbar.underline.title": "Souligné (Ctrl-U)",

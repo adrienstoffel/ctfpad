@@ -453,6 +453,23 @@ var padeditbar = (function()
       ace.ace_doIndentOutdent(true);
     });
 
+    toolbar.registerAceCommand("addnewpad", function (cmd, ace) {
+      var padName = prompt("Pad name ?");
+      var padId = 'src---'+padName;
+      var params = $.param({
+         padID: padId,
+         text: ''
+      });
+      $.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
+        if(data.code===0){
+          var test = prompt('Here is your link', document.location.origin+'/p/'+padId);
+        }
+        else{
+          alert(data.message);
+        }
+      });
+    });
+
     toolbar.registerAceCommand("clearauthorship", function (cmd, ace) {
       if ((!(ace.ace_getRep().selStart && ace.ace_getRep().selEnd)) || ace.ace_isCaret()) {
         if (window.confirm(html10n.get("pad.editbar.clearcolors"))) {
