@@ -190,7 +190,7 @@ module.exports = {
     addnewpad: {
         command: "addnewpad",
         localizationId: "pad.toolbar.addNewPad.title",
-        class: "buttonicon buttonicon-upload-file"
+        class: "buttonicon buttonicon-newPad"
     },
 
     importexport: {
