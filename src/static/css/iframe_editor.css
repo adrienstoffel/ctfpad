@@ -115,7 +115,7 @@ body.doesWrap {
 
 body.doesWrap > div{
   /* Related to #1766 */
-  white-space: pre-wrap;
+  /* white-space: pre-wrap; */
 }
 
 #innerdocbody {
