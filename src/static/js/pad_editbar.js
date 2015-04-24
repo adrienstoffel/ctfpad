@@ -460,14 +460,17 @@ var padeditbar = (function()
          padID: padId,
          text: ''
       });
-      $.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
-        if(data.code===0){
-          var test = prompt('Here is your link', document.location.origin+'/p/'+padId);
-        }
-        else{
-          alert(data.message);
-        }
-      });
+      if(padName !== null){
+        $.get("/api/1.2.9/createPad?apikey="+APIKEY+"&"+params, function( data ) {
+          if(data.code===0){
+            padeditor.ace.replaceRange(undefined, undefined, " " + document.location.origin+'/p/'+padId + " ");
+            padeditor.ace.focus();
+          }
+          else{
+            alert(data.message);
+          }
+        });
+      }
     });
 
     toolbar.registerAceCommand("clearauthorship", function (cmd, ace) {
