@@ -1,3 +1,33 @@
+# 1.5.6
+ * Fix: Error on windows installations
+
+# 1.5.5
+ * SECURITY: Also don't allow read files on directory traversal on minify paths
+ * NEW: padOptions can be set in settings.json now
+ * Fix: Add check for special characters in createPad API function
+ * Fix: Middle click on a link in firefox don't paste text anymore
+ * Fix: Made setPadRaw async to import larger etherpad files
+ * Fix: rtl
+ * Fix: Problem in older IEs
+ * Other: Update to express 4.x
+ * Other: Dropped support for node 0.8
+ * Other: Update ejs to version 2.x
+ * Other: Moved sessionKey from settings.json to a new auto-generated SESSIONKEY.txt file
+
+# 1.5.4
+ * SECURITY: Also don't allow read files on directory traversal on frontend tests path
+
+# 1.5.3
+ * NEW: Accessibility support for Screen readers, includes new fonts and keyboard shortcuts
+ * NEW: API endpoint for Append Chat Message and Chat Backend Tests
+ * NEW: Error messages displayed on load are included in Default Pad Text (can be supressed)
+ * NEW: Content Collector can handle key values
+ * NEW: getAttributesOnPosition Method
+ * FIX: Firefox keeps attributes (bold etc) on cut/copy -> paste
+ * Fix: showControls=false now works
+ * Fix: Cut and Paste works...
+ * SECURITY: Don't allow read files on directory traversal
+
 # 1.5.2
  * NEW: Support for node version 0.12.x
  * NEW: API endpoint saveRevision, getSavedRevisionCount and listSavedRevisions
