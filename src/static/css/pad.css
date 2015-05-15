@@ -939,7 +939,7 @@ input[type=checkbox] {
   height: auto !important;
   border: none !important;
   border-left: 1px solid #ccc !important;
-  width: 185px !important;
+  width: 350px !important;
 }
 .chatAndUsers{
   display:block !important;

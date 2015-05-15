@@ -308,9 +308,6 @@ function handshake()
     //if we haven't recieved the clientVars yet, then this message should it be
     else if (!receivedClientVars && obj.type == "CLIENT_VARS")
     {
-      //log the message
-      if (window.console) console.log(obj);
-
       receivedClientVars = true;
 
       //set some client vars

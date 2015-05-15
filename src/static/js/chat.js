@@ -52,7 +52,7 @@ var chat = (function()
         padcookie.setPref("chatAlwaysVisible", true);
         $('#chatbox').addClass("stickyChat");
         $('#titlesticky').hide();
-        $('#editorcontainer').css({"right":"192px"});
+        $('#editorcontainer').css({"right":"355px"});
         $('.stickyChat').css("top",$('#editorcontainer').offset().top+"px");
         isStuck = true;
       } else { // Unstick it
