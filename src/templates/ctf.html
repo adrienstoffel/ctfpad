@@ -518,8 +518,8 @@
         }
 
         function editTask(li){
-            var taskCategory = $(li).parent().parent().parent().prev().text();
-            var task = $(li).parent().parent().children('.padLink').text().split(']');
+            var taskCategory = $(li).parent().parent().parent().parent().prev().text();
+            var task = $(li).parent().parent().parent().find('.padLink').text().split(']');
             var taskPoints = parseInt(task[0].substring(1),10);
             var taskName = task[1].substring(1);
             $('#taskName').val(taskName);
@@ -552,9 +552,8 @@
 
         function deletePad(btn){
             if(confirm("Are you sure ?")){
-                var category = $(btn).parent().parent().parent().prev().text();
-                var padUri = $(btn).parent().parent().children('.padLink').attr('href').substring(1);
-                console.log(category);
+                var category = $(btn).parent().parent().parent().parent().prev().text();
+                var padUri = $(btn).parent().parent().parent().find('.padLink').attr('href').substring(1);
                 CTF.pads[category].forEach(function(pad){
                     if(pad.name.split('---')[1]===padUri){
                         pad.removed = true;
