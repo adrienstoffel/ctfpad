@@ -505,7 +505,7 @@
 
         function check(i){
             var hash = $(i).parent().children('.padLink').attr('href').substring(1);
-            var category = $(i).parent().parent().prev().text();
+            var category = $(i).parent().parent().parent().prev().text();
             solve(hash, category, $(i).attr('class')==='fa fa-square-o');
         }
 
@@ -666,7 +666,9 @@
                                         $('#pads').append($('<h4/>', {text: category}));
                                         a = 1;
                                     }
-                                    var line = $('<li/>');
+                                    var line = $('<li/>', {
+                                        style: 'width: 100%; display: table'
+                                    });
                                     getPadUsers(pad.name);
 
                                     var padText = "[" + pad.points + "] " + pad.name.split('---')[1];
@@ -686,8 +688,13 @@
                                         chkbxContent['class'] = 'fa fa-check-square-o';
                                         linkContent['class'] = 'padLink solved';
                                     }
-                                    var leftPanel = $('<span/>');
-                                    var rightPanel = $('<span/>');
+                                    var leftPanel = $('<span/>', {
+                                        style: 'word-break: break-all; display:table-cell;',
+                                    });
+                                    var rightPanel = $('<span/>', {
+                                        class: 'text-right text-nowrap',
+                                        style: 'margin-left: 8px; vertical-align: top; display:table-cell;'
+                                    });
 
                                     leftPanel.append($('<i/>', chkbxContent));
                                     leftPanel.append($('<a/>', linkContent));
@@ -728,22 +735,8 @@
                                     rightPanel.append(' ');
                                     rightPanel.append($('<a/>').append($('<i/>', btnDelContent)));
 
-                                    var table = $('<table/>', {
-                                        style: 'width: 100%'
-                                    });
-
-                                    var tr = $('<tr/>');
-                                    tr.append($('<td/>', {
-                                        style: 'word-break: break-all'
-                                    }).append(leftPanel));
-                                    tr.append($('<td/>', {
-                                        class: 'text-right text-nowrap',
-                                        style: 'margin-left: 8px; vertical-align: top;'
-                                    }).append(rightPanel));
-
-                                    table.append($('<tbody/>').append(tr));
-
-                                    line.append(table);
+                                    line.append(leftPanel);
+                                    line.append(rightPanel);
 
                                     ul.append(line);
                                 }
