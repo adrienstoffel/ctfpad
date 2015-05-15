@@ -114,6 +114,8 @@
             }
             .progress {
                 position: relative;
+                height: 25px;
+                margin-bottom: 10px;
             }
 
             .progress span {
@@ -138,9 +140,11 @@
                 </div>
                 <div id="navbar" class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
-                        <li><a href="/"><i class="fa fa-home"></i> Home</a></li>
-                        <li class="dropdown active">
-                            <a><i class="fa fa-flag"></i> CTF</a>
+                        <li>
+                            <a id="btnAddTask" data-toggle="modal" data-target="#addTaskModal"><i class="fa fa-plus"></i> Add task</a>
+                        </li>
+                        <li>
+                                <a id="link" target="_blank"><i class="fa fa-flag"></i> <%= pad %> site</a>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
@@ -201,13 +205,7 @@
                 <br />
                 <a id="refreshPage"><i class="fa fa-refresh fa-lg"></i></a>
             </span>
-            <h3><%= pad %></h3>
-            <p><a id="btnAddTask" data-toggle="modal" data-target="#addTaskModal"><i class="fa fa-plus"></i> Add task</a></p>
-            <p>
-                <strong><i class="fa fa-link"></i> Link:</strong>
-                <a id="link" target="_blank"><%= pad %> site</a><br />
-            </p>
-
+            <br />
             <p><strong><i class="fa fa-key"></i> Credentials</strong>
             <a class="credsview"><i id="credsIconPlus" class="fa fa-plus-square-o"></i></a>
             <a class="credsview"><i id="credsIconMinus" class="fa fa-minus-square-o"></i></a>
@@ -296,18 +294,18 @@
         }
 
         $.get("/api/1.2.9/listAllPads?apikey="+APIKEY, function(data) {
-            
+
             if(data.code === 0){
                 $('#changeCTF').html('');
                 $('#changeCTF').append($('<option/>', {
-                    value: '', 
-                    text : '---- Select a CTF ----' 
+                    value: '',
+                    text : '---- Select a CTF ----'
                 }));
-                
+
                 data.data.padIDs.sort().forEach(function(pad){
                     if(pad.indexOf('---') === -1){
-                        var changeContent = { 
-                            value: pad, 
+                        var changeContent = {
+                            value: pad,
                             text : pad
                         };
                         if('<%= pad %>' === pad){
@@ -436,7 +434,7 @@
                         index = i;
                     }
                 });
-                        
+
                 if(typeof CTF.pads[taskCategory] === 'undefined'){
                     CTF.pads[taskCategory] = [];
                 }
@@ -446,7 +444,7 @@
                     removed: CTF.pads[oldTaskCategory][index].removed,
                     solved: CTF.pads[oldTaskCategory][index].solved,
                 });
-                
+
                 CTF.pads[oldTaskCategory].splice(index, 1);
             }
             else{
@@ -475,7 +473,7 @@
             if(oldTaskName !== taskName){
                 var params = $.param({
                     sourceID: '<%= pad %>---'+oldTaskName,
-                    destinationID: '<%= pad %>---'+taskName                    
+                    destinationID: '<%= pad %>---'+taskName
                 });
 
                 $.get("/api/1.2.9/movePad?apikey="+APIKEY+"&"+params, function( data ) {
@@ -531,7 +529,7 @@
             $('#categories').val(taskCategory);
             $('#newCategory').val('');
             $('#newCategory').css('display', 'none');
-            
+
             $('.modal-title').text('Edit task');
             $('#editTask').css('display','inline');
             $('#newTask').css('display','none');
@@ -562,7 +560,7 @@
                         pad.removed = true;
                     }
                 });
-                
+
                 var newParams = $.param({
                     padID: '<%= pad %>',
                     text: JSON.stringify(CTF)
@@ -642,20 +640,20 @@
                         $('#pads').html('<h4>No tasks yet...</h4>');
                     }
 
-                    $('#categories').append($('<option/>', { 
-                        value: '', 
-                        text : '---- Select a category ----' 
+                    $('#categories').append($('<option/>', {
+                        value: '',
+                        text : '---- Select a category ----'
                     }));
 
-                    $('#categories').append($('<option/>', { 
-                        value: 'new', 
-                        text : 'New category' 
+                    $('#categories').append($('<option/>', {
+                        value: 'new',
+                        text : 'New category'
                     }));
 
                     categories.sort().forEach(function(category) {
-                        $('#categories').append($('<option/>', { 
-                            value: category, 
-                            text : category 
+                        $('#categories').append($('<option/>', {
+                            value: category,
+                            text : category
                         }));
                         var a = 0;
                         var ul = $('<ul/>', {class: 'list-unstyled'});
@@ -703,7 +701,7 @@
                                     var tooltipA = $('<a/>', {
                                         class: 'text-muted'
                                     });
-                                    var tooltipI = $('<i/>', {                                        
+                                    var tooltipI = $('<i/>', {
                                         class: 'fa fa-usera-times',
                                         text: 0
                                     });
