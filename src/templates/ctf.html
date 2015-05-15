@@ -686,11 +686,14 @@
                                         chkbxContent['class'] = 'fa fa-check-square-o';
                                         linkContent['class'] = 'padLink solved';
                                     }
-                                    line.append($('<i/>', chkbxContent));
-                                    line.append($('<a/>', linkContent));
+                                    var leftPanel = $('<span/>');
+                                    var rightPanel = $('<span/>');
+
+                                    leftPanel.append($('<i/>', chkbxContent));
+                                    leftPanel.append($('<a/>', linkContent));
+
                                     var tooltip = $('<span/>', {
                                         id: 'span_'+pad.name.checksum(),
-                                        class: 'pull-right'
                                     });
                                     var tooltipSpan = $('<span/>', {
                                         'data-toggle': 'tooltip',
@@ -710,18 +713,38 @@
                                     tooltip.append(tooltipSpan);
 
                                     var btnDelContent = {
-                                        class: 'fa fa-trash pull-right',
+                                        class: 'fa fa-trash',
                                         onclick: 'deletePad(this);'
                                     }
 
                                     var btnEditContent = {
-                                        class: 'fa fa-pencil-square-o pull-right',
+                                        class: 'fa fa-pencil-square-o',
                                         onclick: 'editTask(this);'
                                     }
 
-                                    line.append($('<a/>').append($('<i/>', btnDelContent)));
-                                    line.append($('<a/>').append($('<i/>', btnEditContent)));
-                                    line.append(tooltip);
+                                    rightPanel.append(tooltip);
+                                    rightPanel.append(' ');
+                                    rightPanel.append($('<a/>').append($('<i/>', btnEditContent)));
+                                    rightPanel.append(' ');
+                                    rightPanel.append($('<a/>').append($('<i/>', btnDelContent)));
+
+                                    var table = $('<table/>', {
+                                        style: 'width: 100%'
+                                    });
+
+                                    var tr = $('<tr/>');
+                                    tr.append($('<td/>', {
+                                        style: 'word-break: break-all'
+                                    }).append(leftPanel));
+                                    tr.append($('<td/>', {
+                                        class: 'text-right text-nowrap',
+                                        style: 'margin-left: 8px; vertical-align: top;'
+                                    }).append(rightPanel));
+
+                                    table.append($('<tbody/>').append(tr));
+
+                                    line.append(table);
+
                                     ul.append(line);
                                 }
                             });
